@@ -1,4 +1,5 @@
 import dotenv from "dotenv";
+import "colors";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import express from "express";
@@ -6,6 +7,7 @@ import connectDB from "./config/db.js";
 import swaggerDocs from "./config/swagger.js";
 import { errorHandle } from "./middleware/errorMiddleware.js";
 import router from "./router/index.js";
+import Logger from "./util/logging.js";
 
 dotenv.config();
 const app = express();
@@ -19,12 +21,20 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// Middleware bắt log HTTP request có màu chuẩn app.apis
 app.use((req, res, next) => {
-    const startedAt = Date.now();
-    res.on("finish", () => {
-        console.log(
-            `${req.method} ${req.originalUrl} ${res.statusCode} (${Date.now() - startedAt}ms)`,
-        );
+    const start = Date.now();
+    res.on('finish', () => {
+        const duration = Date.now() - start;
+        const statusCode = res.statusCode;
+        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
+        const logMsg = `${ip}: ${req.method.toUpperCase()} ${req.originalUrl} --> ${statusCode} (${duration}ms)`;
+
+        if (statusCode <= 304) {
+            Logger.info(logMsg.green);
+        } else {
+            Logger.error(logMsg.red);
+        }
     });
     next();
 });
@@ -38,8 +48,6 @@ swaggerDocs(app);
 app.use(errorHandle);
 
 const startServer = async () => {
-    // The DB helper reports connection errors itself; the API can still start
-    // so routes that do not need MongoDB (health/docs) remain available.
     await connectDB();
     app.listen(port, () => {
         console.log(`Troeasy API listening at http://localhost:${port}`);
