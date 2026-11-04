@@ -5,9 +5,9 @@ import cookieParser from "cookie-parser";
 import express from "express";
 import connectDB from "./config/db.js";
 import swaggerDocs from "./config/swagger.js";
-import { errorHandle } from "./middleware/errorMiddleware.js";
-import router from "./router/index.js";
-import Logger from "./util/logging.js";
+import { errorHandle } from "./middlewares/errorMiddleware.js";
+import router from "./routes/index.js";
+import Logger from "./utils/logging.js";
 
 dotenv.config();
 const app = express();
