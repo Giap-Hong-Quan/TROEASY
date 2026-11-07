@@ -22,6 +22,43 @@ const swaggerOptions = {
                 description: process.env.API_URL ? "API server" : "Local development server",
             },
         ],
+        components: {
+            securitySchemes: {
+                bearerAuth: {
+                    type: "http",
+                    scheme: "bearer",
+                    bearerFormat: "JWT",
+                },
+            },
+            schemas: {
+                AuthUser: {
+                    type: "object",
+                    properties: {
+                        id: { type: "string", example: "665f1a2b3c4d5e6f78901234" },
+                        username: { type: "string", example: "admin" },
+                        fullName: { type: "string", nullable: true, example: "Admin" },
+                    },
+                },
+                AuthError: {
+                    type: "object",
+                    properties: {
+                        success: { type: "boolean", example: false },
+                        message: { type: "string", example: "Username hoặc mật khẩu không đúng." },
+                    },
+                },
+                User: {
+                    type: "object",
+                    properties: {
+                        id: { type: "string", example: "665f1a2b3c4d5e6f78901234" },
+                        username: { type: "string", example: "user01" },
+                        fullName: { type: "string", nullable: true, example: "Nguyen Van A" },
+                        isActive: { type: "boolean", example: true },
+                        createdAt: { type: "string", format: "date-time" },
+                        updatedAt: { type: "string", format: "date-time" },
+                    },
+                },
+            },
+        },
     },
     // Quét file JavaScript trong src, gồm cả route và controller có JSDoc @openapi.
     apis: [path.resolve(currentDir, "../**/*.js").replace(/\\/g, "/")],

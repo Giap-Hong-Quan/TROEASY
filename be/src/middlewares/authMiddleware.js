@@ -31,20 +31,3 @@ export const verifyToken = async (req, res, next) => {
     }
 };
 
-export const requireRoles = (...roles) => (req, res, next) => {
-    if (!req.user) {
-        return res.status(401).json({ success: false, message: "Vui lòng đăng nhập." });
-    }
-    if (!roles.includes(req.user.role)) {
-        return res.status(403).json({ success: false, message: "Bạn không có quyền thực hiện thao tác này." });
-    }
-    return next();
-};
-
-export const requireAreaAccess = (paramName = "areaId") => (req, res, next) => {
-    if (req.user?.role === "owner") return next();
-    if (req.user?.role === "manager" && String(req.user.areaId) === req.params[paramName]) {
-        return next();
-    }
-    return res.status(403).json({ success: false, message: "Bạn không có quyền truy cập khu này." });
-};

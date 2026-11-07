@@ -8,13 +8,6 @@ const areaSchema = new mongoose.Schema(
             trim: true,
             maxlength: 120,
         },
-        code: {
-            type: String,
-            required: [true, "Mã khu là bắt buộc"],
-            trim: true,
-            uppercase: true,
-            maxlength: 32,
-        },
         address: {
             type: String,
             required: [true, "Địa chỉ khu là bắt buộc"],
@@ -28,8 +21,6 @@ const areaSchema = new mongoose.Schema(
     },
     { timestamps: true },
 );
-
-areaSchema.index({ code: 1 }, { unique: true });
 
 const Area = mongoose.models.Area || mongoose.model("Area", areaSchema);
 

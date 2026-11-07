@@ -1,38 +1,24 @@
-import bcrypt from "bcrypt";
-import User from "../models/User.js";
-import { accessToken } from "../utils/jwt.js";
+import { loginUser } from "../services/authService.js";
+import { success } from "../utils/success.js";
 
 const publicUser = (user) => ({
     id: user._id,
     username: user.username,
     fullName: user.fullName,
-    role: user.role,
-    areaId: user.areaId,
 });
 
 export const login = async (req, res, next) => {
     try {
-        const username = req.body.username.toLowerCase();
-        const user = await User.findOne({ username }).select("+password");
-
-        if (!user || !user.isActive || !(await bcrypt.compare(req.body.password, user.password))) {
-            return res.status(401).json({ success: false, message: "Username hoặc mật khẩu không đúng." });
-        }
-
-        return res.status(200).json({
-            success: true,
-            message: "Đăng nhập thành công.",
-            data: {
-                accessToken: accessToken({ sub: user._id.toString() }),
-                user: publicUser(user),
-            },
-        });
+        const data = await loginUser(req.body);
+        return success(res, data, "Đăng nhập thành công.", 200);
     } catch (error) {
         return next(error);
     }
 };
 
-export const getMe = (req, res) => res.status(200).json({
-    success: true,
-    data: { user: publicUser(req.user) },
-});
+export const getMe = (req, res) => success(
+    res,
+    { user: publicUser(req.user) },
+    "Lấy thông tin tài khoản thành công.",
+    200,
+);
