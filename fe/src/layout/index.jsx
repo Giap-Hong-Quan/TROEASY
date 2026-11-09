@@ -1,15 +1,22 @@
-import React, { useState } from "react";
-import { Outlet } from "react-router-dom";
+import { useState } from "react";
+import { Outlet, useLocation } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
+
+// Map đường dẫn -> tên menu để Sidebar/Header luôn đúng kể cả khi reload trang.
+const PAGE_BY_PATH = {
+  "/": "Tổng quan",
+  "/rooms": "Sơ đồ phòng",
+  "/tenants": "Khách thuê",
+};
 
 // Layout chung cho các trang cần đăng nhập.
 export default function Index() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activePage, setActivePage] = useState("Tổng quan");
+  const { pathname } = useLocation();
+  const activePage = PAGE_BY_PATH[pathname] || "Tổng quan";
 
-  const selectPage = (page) => {
-    setActivePage(page);
+  const selectPage = () => {
     setSidebarOpen(false);
   };
 

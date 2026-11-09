@@ -4,6 +4,7 @@ import MainLayout from "../layout/index.jsx";
 import DashboardPage from "../pages/DashboardPage.jsx";
 import LoginPage from "../pages/LoginPage.jsx";
 import RoomMap from "../pages/RoomMap.jsx";
+import TenantsPage from "../pages/TenantsPage.jsx";
 
 const router = createBrowserRouter([
     {
@@ -25,6 +26,10 @@ const router = createBrowserRouter([
                     {
                         path: "rooms",
                         element: <RoomMap />,
+                    },
+                    {
+                        path: "tenants",
+                        element: <TenantsPage />,
                     },
                 ],
             },

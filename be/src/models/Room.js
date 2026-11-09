@@ -13,14 +13,22 @@ const roomSchema = new mongoose.Schema(
         areaId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Area",
+            required: [true, "Khu vực là bắt buộc"],
+        },
+        rowId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Row",
+            default: null,
+            index: true,
+        },
+        row: {
+            type: String,
+            trim: true,
         },
         code: {
             type: String,
             trim: true,
             uppercase: true,
-        },
-        floor: {
-            type: Number,
         },
         basePrice: {
             type: Number,
@@ -45,6 +53,7 @@ const roomSchema = new mongoose.Schema(
             default: [],
         },
     },
+    { timestamps: true },
 );
 
 roomSchema.index({ areaId: 1, code: 1 }, { unique: true });

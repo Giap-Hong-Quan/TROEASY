@@ -11,9 +11,9 @@ import {
 
 const groups = [
   { title: "TỔNG QUAN", items: [
-    { label: "Tổng quan", icon: LayoutDashboard },
-    { label: "Sơ đồ phòng", icon: House },
-    { label: "Khách thuê", icon: UsersRound },
+    { label: "Tổng quan", icon: LayoutDashboard, path: "/" },
+    { label: "Sơ đồ phòng", icon: House, path: "/rooms" },
+    { label: "Khách thuê", icon: UsersRound, path: "/tenants" },
     { label: "Hợp đồng", icon: FileText },
   ]},
   { title: "VẬN HÀNH", items: [
@@ -87,7 +87,7 @@ export default function Sidebar({ open, onClose, activePage, onSelectPage }) {
             <div key={group.title}>
               <p className="mb-2 px-[13px] text-[10px] font-extrabold tracking-[1.6px] text-[#a8acbb]">{group.title}</p>
               <div className="space-y-0.5">
-                {group.items.map(({ label, icon: Icon, badge }) => {
+                {group.items.map(({ label, icon: Icon, badge, path }) => {
                   const selected = activePage === label;
                   return (
                     <button
@@ -95,7 +95,7 @@ export default function Sidebar({ open, onClose, activePage, onSelectPage }) {
                       key={label}
                       onClick={() => {
                         onSelectPage(label);
-                        navigate(label === "Sơ đồ phòng" ? "/rooms" : "/");
+                        navigate(path || "/");
                       }}
                       aria-current={selected ? "page" : undefined}
                       className={`relative flex w-full items-center gap-3 rounded-[11px] px-[13px] py-[11px] text-left text-[12.9px] font-semibold transition-colors ${selected ? "bg-[#efecff] text-[#5e4bd5]" : "text-[#797e95] hover:bg-[#f5f4fb] hover:text-[#5140bf]"}`}
