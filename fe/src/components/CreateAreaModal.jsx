@@ -129,27 +129,27 @@ function CreateAreaForm({ onClose }) {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-2.5 border-t border-[#f0f0f6] bg-[#fafafc] px-5 py-3">
+        <div className="flex items-center justify-end gap-2 border-t border-[#f0f0f6] bg-[#fafafc] px-5 py-3">
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl border border-[#e5e6ee] bg-white px-4 py-2 text-xs font-semibold text-[#54596e] transition hover:bg-[#f6f7fb]"
+            className="inline-flex h-8 items-center justify-center rounded-[8px] border border-[#e5e6ee] bg-white px-3 text-[11.5px] font-semibold text-[#54596e] transition-colors hover:bg-[#f6f7fb]"
           >
             Hủy
           </button>
           <button
             type="submit"
             disabled={createAreaMutation.isPending}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-[#6756df] px-5 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-[#5645ce] active:scale-[0.98] disabled:opacity-60"
+            className="inline-flex h-8 items-center justify-center gap-1 rounded-[8px] bg-[#6756df] px-3 text-[11.5px] font-semibold text-white transition-colors hover:bg-[#5b4bc7] active:scale-[0.98] disabled:opacity-60"
           >
             {createAreaMutation.isPending ? (
               <>
-                <Loader2 size={13} className="animate-spin" />
+                <Loader2 size={12} className="animate-spin" />
                 Đang tạo khu...
               </>
             ) : (
               <>
-                <Plus size={14} />
+                <Plus size={13} />
                 Tạo khu trọ
               </>
             )}

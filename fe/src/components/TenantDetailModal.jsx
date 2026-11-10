@@ -231,20 +231,20 @@ export default function TenantDetailModal({ isOpen, onClose, tenant, zIndex = 12
               </div>
 
               {/* Modal Footer */}
-              <div className="flex items-center justify-end gap-2.5 border-t border-[#eeeff6] pt-4">
+              <div className="flex items-center justify-end gap-2 border-t border-[#eeeff6] pt-4">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="h-10 rounded-[10px] border border-[#e5e6ee] bg-white px-5 text-xs font-bold text-[#66697c] transition-colors hover:bg-slate-50"
+                  className="inline-flex h-8 items-center justify-center rounded-[8px] border border-[#e5e6ee] bg-white px-3 text-[11.5px] font-semibold text-[#54596e] transition-colors hover:bg-slate-50"
                 >
                   Đóng
                 </button>
                 {currentTenant.phone && (
                   <a
                     href={`tel:${currentTenant.phone}`}
-                    className="inline-flex h-10 items-center gap-1.5 rounded-[10px] bg-[#6756df] px-5 text-xs font-bold text-white shadow-[0_6px_15px_rgba(103,86,223,0.18)] transition-colors hover:bg-[#5b4bc7]"
+                    className="inline-flex h-8 items-center justify-center gap-1 rounded-[8px] bg-[#6756df] px-3 text-[11.5px] font-semibold text-white transition-colors hover:bg-[#5b4bc7]"
                   >
-                    <Phone size={14} />
+                    <Phone size={13} />
                     Gọi điện
                   </a>
                 )}

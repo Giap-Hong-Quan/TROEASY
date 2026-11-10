@@ -101,9 +101,9 @@ export default function ContractsPage() {
         <button
           type="button"
           onClick={() => setIsCreateOpen(true)}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#6756df] px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-[#5645ce] active:scale-[0.98]"
+          className="inline-flex h-8 items-center justify-center gap-1 rounded-[8px] bg-[#6756df] px-2.5 text-[11.5px] font-semibold text-white transition-colors hover:bg-[#5b4bc7]"
         >
-          <FilePlus2 size={15} />
+          <FilePlus2 size={13} />
           Tạo hợp đồng
         </button>
       </div>

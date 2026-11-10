@@ -255,14 +255,14 @@ function CreateTenantForm({ area, room, onClose }) {
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl border border-[#e5e6ee] bg-white px-4 py-2 font-semibold text-[#54596e] hover:bg-[#f6f7fb]"
+            className="inline-flex h-8 items-center justify-center rounded-[8px] border border-[#e5e6ee] bg-white px-3 text-[11.5px] font-semibold text-[#54596e] transition-colors hover:bg-[#f6f7fb]"
           >
             Hủy
           </button>
           <button
             type="submit"
             disabled={createTenantMutation.isPending}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-[#6756df] px-5 py-2 font-bold text-white shadow-sm hover:bg-[#5745c8] disabled:opacity-50"
+            className="inline-flex h-8 items-center justify-center gap-1 rounded-[8px] bg-[#6756df] px-3 text-[11.5px] font-semibold text-white transition-colors hover:bg-[#5745c8] disabled:opacity-50"
           >
             {createTenantMutation.isPending ? "Đang lưu..." : "Lưu khách thuê"}
           </button>

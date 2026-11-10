@@ -345,21 +345,21 @@ function CreateContractForm({ onClose, areas, rooms, tenants, busyRoomIds }) {
         )}
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-2.5 border-t border-[#eeeff6] pt-4">
+        <div className="flex items-center justify-end gap-2 border-t border-[#eeeff6] pt-4">
           <button
             type="button"
             onClick={onClose}
             disabled={mutation.isPending}
-            className="h-10 rounded-[10px] border border-[#e5e6ee] bg-white px-4 text-xs font-bold text-[#66697c] transition-colors hover:bg-slate-50"
+            className="inline-flex h-8 items-center justify-center rounded-[8px] border border-[#e5e6ee] bg-white px-3 text-[11.5px] font-semibold text-[#54596e] transition-colors hover:bg-slate-50"
           >
             Hủy
           </button>
           <button
             type="submit"
             disabled={mutation.isPending}
-            className="inline-flex h-10 items-center gap-1.5 rounded-[10px] bg-[#6756df] px-5 text-xs font-bold text-white shadow-[0_6px_15px_rgba(103,86,223,0.18)] transition-colors hover:bg-[#5b4bc7] disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex h-8 items-center justify-center gap-1 rounded-[8px] bg-[#6756df] px-3 text-[11.5px] font-semibold text-white transition-colors hover:bg-[#5b4bc7] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            <FilePlus2 size={15} />
+            <FilePlus2 size={13} />
             {mutation.isPending ? "Đang tạo..." : "Tạo hợp đồng"}
           </button>
         </div>

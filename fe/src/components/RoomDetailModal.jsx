@@ -326,9 +326,9 @@ export default function RoomDetailModal({
                   <button
                     type="button"
                     onClick={() => setIsAddTenantOpen(true)}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-[#6756df] px-3 py-1.5 text-xs font-bold text-white shadow-sm transition hover:bg-[#5645ce] active:scale-[0.98]"
+                    className="inline-flex h-8 items-center justify-center gap-1 rounded-[8px] bg-[#6756df] px-2.5 text-[11.5px] font-semibold text-white transition-colors hover:bg-[#5b4bc7]"
                   >
-                    <UserPlus size={14} />
+                    <UserPlus size={13} />
                     Thêm người
                   </button>
                 </div>
@@ -417,7 +417,7 @@ export default function RoomDetailModal({
                     <button
                       type="button"
                       onClick={() => setIsAddTenantOpen(true)}
-                      className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-[#dcd6fb] bg-white px-3 py-1.5 text-xs font-bold text-[#6756df] transition hover:bg-[#f8f7ff]"
+                      className="mt-3 inline-flex h-8 items-center justify-center gap-1 rounded-[8px] border border-[#d9d4ff] bg-[#f5f3ff] px-2.5 text-[11.5px] font-semibold text-[#6756df] transition-colors hover:bg-[#ece8ff]"
                     >
                       <UserPlus size={13} /> Thêm người thuê
                     </button>
@@ -586,18 +586,9 @@ export default function RoomDetailModal({
                   /* ================= CHẾ ĐỘ XEM CHI TIẾT ================= */
                   <>
                     <div>
-                      <div className="mb-2.5 flex items-center justify-between">
-                        <h3 className="text-[11px] font-extrabold uppercase tracking-[0.8px] text-[#9da2b4]">
-                          Thông tin phòng
-                        </h3>
-                        <button
-                          type="button"
-                          onClick={handleStartEditing}
-                          className="inline-flex items-center gap-1 text-[11px] font-bold text-[#6756df] hover:underline"
-                        >
-                          <Pencil size={11} /> Chỉnh sửa
-                        </button>
-                      </div>
+                      <h3 className="mb-2.5 text-[11px] font-extrabold uppercase tracking-[0.8px] text-[#9da2b4]">
+                        Thông tin phòng
+                      </h3>
                       <div className="space-y-2">
                         <InfoItem
                           icon={Banknote}
@@ -648,15 +639,15 @@ export default function RoomDetailModal({
             </div>
 
             {/* ===== FOOTER ===== */}
-            <div className="flex items-center justify-between gap-3 border-t border-[#f0f0f6] bg-[#fafafc] px-6 py-3.5">
+            <div className="flex items-center justify-between gap-3 border-t border-[#f0f0f6] bg-[#fafafc] px-6 py-3">
               <div>
                 {!isEditing ? (
                   <button
                     type="button"
                     onClick={() => setIsConfirmDeleteOpen(true)}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-[#ffd0d6] bg-white px-3 py-1.5 text-xs font-bold text-[#dd5262] transition hover:bg-[#fff1f3]"
+                    className="inline-flex h-8 items-center justify-center gap-1 rounded-[8px] border border-[#ffd0d6] bg-[#fff5f6] px-2.5 text-[11.5px] font-semibold text-[#dd5262] transition-colors hover:bg-[#ffebee] hover:border-[#fca5af]"
                   >
-                    <Trash2 size={14} />
+                    <Trash2 size={13} />
                     Xóa phòng
                   </button>
                 ) : (
@@ -672,15 +663,15 @@ export default function RoomDetailModal({
                     <button
                       type="button"
                       onClick={handleStartEditing}
-                      className="inline-flex items-center gap-1.5 rounded-xl border border-[#dcd6fb] bg-[#f1effe] px-3.5 py-1.5 text-xs font-bold text-[#6756df] transition hover:bg-[#e6e2fd] active:scale-[0.98]"
+                      className="inline-flex h-8 items-center justify-center gap-1 rounded-[8px] border border-[#d9d4ff] bg-[#f5f3ff] px-2.5 text-[11.5px] font-semibold text-[#6756df] transition-colors hover:bg-[#ece8ff]"
                     >
-                      <Pencil size={13} />
+                      <Pencil size={12} />
                       Chỉnh sửa
                     </button>
                     <button
                       type="button"
                       onClick={handleModalClose}
-                      className="rounded-xl border border-[#e5e6ee] bg-white px-4 py-1.5 text-xs font-semibold text-[#54596e] transition hover:bg-[#f3f4f8]"
+                      className="inline-flex h-8 items-center justify-center rounded-[8px] border border-[#e5e6ee] bg-white px-3 text-[11.5px] font-semibold text-[#54596e] transition-colors hover:bg-[#f3f4f8]"
                     >
                       Đóng
                     </button>
@@ -690,7 +681,7 @@ export default function RoomDetailModal({
                     <button
                       type="button"
                       onClick={handleCancelEditing}
-                      className="rounded-xl border border-[#e5e6ee] bg-white px-3.5 py-1.5 text-xs font-semibold text-[#54596e] transition hover:bg-[#f3f4f8]"
+                      className="inline-flex h-8 items-center justify-center rounded-[8px] border border-[#e5e6ee] bg-white px-3 text-[11.5px] font-semibold text-[#54596e] transition-colors hover:bg-[#f3f4f8]"
                     >
                       Hủy
                     </button>
@@ -698,9 +689,9 @@ export default function RoomDetailModal({
                       type="button"
                       disabled={updateRoomMutation.isPending}
                       onClick={handleSaveEdit}
-                      className="inline-flex items-center gap-1.5 rounded-xl bg-[#6756df] px-4 py-1.5 text-xs font-bold text-white shadow-sm transition hover:bg-[#5645ce] active:scale-[0.98] disabled:opacity-60"
+                      className="inline-flex h-8 items-center justify-center gap-1 rounded-[8px] bg-[#6756df] px-3 text-[11.5px] font-semibold text-white transition-colors hover:bg-[#5b4bc7] active:scale-[0.98] disabled:opacity-60"
                     >
-                      <Check size={14} />
+                      <Check size={13} />
                       {updateRoomMutation.isPending ? "Đang lưu..." : "Lưu thay đổi"}
                     </button>
                   </>
@@ -740,7 +731,7 @@ export default function RoomDetailModal({
               type="button"
               disabled={deleteRoomMutation.isPending}
               onClick={() => setIsConfirmDeleteOpen(false)}
-              className="flex-1 rounded-xl border border-[#e5e6ee] bg-white py-2 text-xs font-semibold text-[#54596e] transition hover:bg-[#f6f7fb] disabled:opacity-50"
+              className="inline-flex h-8 flex-1 items-center justify-center rounded-[8px] border border-[#e5e6ee] bg-white text-[11.5px] font-semibold text-[#54596e] transition-colors hover:bg-[#f6f7fb] disabled:opacity-50"
             >
               Hủy
             </button>
@@ -748,7 +739,7 @@ export default function RoomDetailModal({
               type="button"
               disabled={deleteRoomMutation.isPending}
               onClick={() => deleteRoomMutation.mutate()}
-              className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-[#e0566a] py-2 text-xs font-bold text-white shadow-sm transition hover:bg-[#cc4459] disabled:opacity-60"
+              className="inline-flex h-8 flex-1 items-center justify-center gap-1 rounded-[8px] bg-rose-600 text-[11.5px] font-semibold text-white shadow-sm transition-colors hover:bg-rose-700 disabled:opacity-60"
             >
               <Trash2 size={13} />
               {deleteRoomMutation.isPending ? "Đang xóa..." : "Xóa phòng"}

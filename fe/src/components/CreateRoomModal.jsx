@@ -35,8 +35,14 @@ export default function CreateRoomModal({
   const queryClient = useQueryClient();
   const rowDropdownRef = useRef(null);
 
-  const [areaId, setAreaId] = useState("");
-  const [rowId, setRowId] = useState("");
+  const areaId = defaultAreaId || areas[0]?.id || "";
+  const [rowId, setRowId] = useState(() => {
+    const initialAreaId = defaultAreaId || areas[0]?.id || "";
+    const matchingRows = rows
+      .filter((r) => String(r.areaId) === String(initialAreaId) && r.isActive !== false)
+      .sort((a, b) => a.name.localeCompare(b.name, "vi", { numeric: true }));
+    return defaultRowId || matchingRows[0]?.id || "";
+  });
   const [rowDropdownOpen, setRowDropdownOpen] = useState(false);
   const [isAddingRowInline, setIsAddingRowInline] = useState(false);
   const [newRowName, setNewRowName] = useState("");
@@ -65,26 +71,7 @@ export default function CreateRoomModal({
     [areaRows, rowId],
   );
 
-  useEffect(() => {
-    if (isOpen) {
-      const initialAreaId = defaultAreaId || areas[0]?.id || "";
-      setAreaId(initialAreaId);
-      const matchingRows = rows
-        .filter((r) => String(r.areaId) === String(initialAreaId) && r.isActive !== false)
-        .sort((a, b) => a.name.localeCompare(b.name, "vi", { numeric: true }));
-      setRowId(defaultRowId || matchingRows[0]?.id || "");
-      setRowDropdownOpen(false);
-      setIsAddingRowInline(false);
-      setNewRowName("");
-      setCode("");
-      setBasePrice("");
-      setStatus("vacant");
-      setSelectedAssets([]);
-      setCustomAsset("");
-      setErrorMessage("");
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, defaultAreaId, defaultRowId]);
+
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -439,9 +426,9 @@ export default function CreateRoomModal({
               <button
                 type="button"
                 onClick={handleAddCustomAsset}
-                className="inline-flex h-9 items-center gap-1 rounded-[10px] border border-[#e5e6ee] bg-[#fafaff] px-3 text-xs font-semibold text-[#5c6178] hover:bg-[#f0f0f8]"
+                className="inline-flex h-8 items-center justify-center gap-1 rounded-[8px] border border-[#d9d4ff] bg-[#f5f3ff] px-2.5 text-[11.5px] font-semibold text-[#6756df] transition-colors hover:bg-[#ece8ff]"
               >
-                <Plus size={14} /> Thêm
+                <Plus size={13} /> Thêm
               </button>
             </div>
 
@@ -473,21 +460,21 @@ export default function CreateRoomModal({
           )}
 
           {/* Modal Footer */}
-          <div className="flex items-center justify-end gap-2.5 border-t border-[#eeeff6] pt-4">
+          <div className="flex items-center justify-end gap-2 border-t border-[#eeeff6] pt-4">
             <button
               type="button"
               onClick={onClose}
               disabled={createRoomMutation.isPending}
-              className="h-10 rounded-[10px] border border-[#e5e6ee] bg-white px-4 text-xs font-bold text-[#66697c] transition-colors hover:bg-slate-50"
+              className="inline-flex h-8 items-center justify-center rounded-[8px] border border-[#e5e6ee] bg-white px-3 text-[11.5px] font-semibold text-[#54596e] transition-colors hover:bg-slate-50"
             >
               Hủy
             </button>
             <button
               type="submit"
               disabled={createRoomMutation.isPending}
-              className="inline-flex h-10 items-center gap-1.5 rounded-[10px] bg-[#6756df] px-5 text-xs font-bold text-white shadow-[0_6px_15px_rgba(103,86,223,0.18)] transition-colors hover:bg-[#5b4bc7] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex h-8 items-center justify-center gap-1 rounded-[8px] bg-[#6756df] px-3 text-[11.5px] font-semibold text-white transition-colors hover:bg-[#5b4bc7] disabled:opacity-60"
             >
-              <Plus size={15} />
+              <Plus size={13} />
               {createRoomMutation.isPending ? "Đang tạo..." : "Tạo phòng"}
             </button>
           </div>

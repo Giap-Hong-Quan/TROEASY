@@ -279,7 +279,7 @@ export default function TenantsPage({
                               if (onViewTenant) onViewTenant(tenant);
                               else setSelectedTenant(tenant);
                             }}
-                            className="rounded-lg border border-[#e5e6ee] bg-white px-2.5 py-1 text-[11px] font-semibold text-[#54596e] transition hover:border-[#c7befb] hover:bg-[#faf9ff] hover:text-[#624dd5]"
+                            className="inline-flex h-8 items-center justify-center rounded-[8px] border border-[#e5e6ee] bg-white px-2.5 text-[11.5px] font-semibold text-[#54596e] transition-colors hover:border-[#c7befb] hover:bg-[#faf9ff] hover:text-[#6756df]"
                           >
                             Chi tiết
                           </button>
@@ -288,7 +288,7 @@ export default function TenantsPage({
                             <button
                               type="button"
                               onClick={() => onCheckoutTenant?.(tenant)}
-                              className="rounded-lg border border-transparent bg-[#ffebee] px-2.5 py-1 text-[11px] font-semibold text-[#dd5262] transition hover:bg-[#ffdfe4]"
+                              className="inline-flex h-8 items-center justify-center rounded-[8px] border border-[#ffd0d6] bg-[#fff5f6] px-2.5 text-[11.5px] font-semibold text-[#dd5262] transition-colors hover:bg-[#ffebee] hover:border-[#fca5af]"
                             >
                               Trả phòng
                             </button>

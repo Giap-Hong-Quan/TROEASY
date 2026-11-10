@@ -241,21 +241,21 @@ export default function ContractDetailModal({ isOpen, onClose, contract }) {
                   type="button"
                   disabled={isBusy}
                   onClick={() => setConfirmAction("delete")}
-                  className="inline-flex h-10 items-center gap-1.5 rounded-[10px] border border-[#ffd0d6] bg-white px-3.5 text-xs font-bold text-[#dd5262] transition hover:bg-[#fff1f3] disabled:opacity-50"
+                  className="inline-flex h-8 items-center justify-center gap-1 rounded-[8px] border border-[#ffd0d6] bg-[#fff5f6] px-2.5 text-[11.5px] font-semibold text-[#dd5262] transition-colors hover:bg-[#ffebee] hover:border-[#fca5af] disabled:opacity-50"
                 >
-                  <Trash2 size={14} />
+                  <Trash2 size={13} />
                   Xóa
                 </button>
 
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex flex-wrap items-center gap-1.5">
                   {current.status === "active" && (
                     <button
                       type="button"
                       disabled={isBusy}
                       onClick={() => setConfirmAction("terminate")}
-                      className="inline-flex h-10 items-center gap-1.5 rounded-[10px] border border-[#e5e6ee] bg-white px-3.5 text-xs font-bold text-[#66697c] transition hover:bg-slate-50 disabled:opacity-50"
+                      className="inline-flex h-8 items-center justify-center gap-1 rounded-[8px] border border-[#e5e6ee] bg-white px-2.5 text-[11.5px] font-semibold text-[#66697c] transition-colors hover:bg-slate-50 disabled:opacity-50"
                     >
-                      <FileX2 size={14} />
+                      <FileX2 size={13} />
                       Thanh lý
                     </button>
                   )}
@@ -265,18 +265,18 @@ export default function ContractDetailModal({ isOpen, onClose, contract }) {
                         type="button"
                         disabled={isBusy}
                         onClick={() => handleExtend(6)}
-                        className="inline-flex h-10 items-center gap-1.5 rounded-[10px] border border-[#dcd6fb] bg-[#f8f7ff] px-3.5 text-xs font-bold text-[#6756df] transition hover:bg-[#efecff] disabled:opacity-50"
+                        className="inline-flex h-8 items-center justify-center gap-1 rounded-[8px] border border-[#d9d4ff] bg-[#f5f3ff] px-2.5 text-[11.5px] font-semibold text-[#6756df] transition-colors hover:bg-[#ece8ff] disabled:opacity-50"
                       >
-                        <CalendarPlus size={14} />
+                        <CalendarPlus size={13} />
                         +6 tháng
                       </button>
                       <button
                         type="button"
                         disabled={isBusy}
                         onClick={() => handleExtend(12)}
-                        className="inline-flex h-10 items-center gap-1.5 rounded-[10px] bg-[#6756df] px-4 text-xs font-bold text-white shadow-[0_6px_15px_rgba(103,86,223,0.18)] transition hover:bg-[#5b4bc7] disabled:opacity-50"
+                        className="inline-flex h-8 items-center justify-center gap-1 rounded-[8px] bg-[#6756df] px-3 text-[11.5px] font-semibold text-white transition-colors hover:bg-[#5b4bc7] disabled:opacity-50"
                       >
-                        <CalendarPlus size={14} />
+                        <CalendarPlus size={13} />
                         Gia hạn 12 tháng
                       </button>
                     </>
@@ -311,7 +311,7 @@ export default function ContractDetailModal({ isOpen, onClose, contract }) {
                 type="button"
                 disabled={isBusy}
                 onClick={() => setConfirmAction(null)}
-                className="flex-1 rounded-xl border border-[#e5e6ee] bg-white py-2 text-xs font-semibold text-[#54596e] transition hover:bg-[#f6f7fb] disabled:opacity-50"
+                className="inline-flex h-8 flex-1 items-center justify-center rounded-[8px] border border-[#e5e6ee] bg-white text-[11.5px] font-semibold text-[#54596e] transition-colors hover:bg-[#f6f7fb] disabled:opacity-50"
               >
                 Hủy
               </button>
@@ -319,7 +319,7 @@ export default function ContractDetailModal({ isOpen, onClose, contract }) {
                 type="button"
                 disabled={isBusy}
                 onClick={handleConfirm}
-                className="flex-1 rounded-xl bg-[#e0566a] py-2 text-xs font-bold text-white shadow-sm transition hover:bg-[#cc4459] disabled:opacity-60"
+                className="inline-flex h-8 flex-1 items-center justify-center rounded-[8px] bg-rose-600 text-[11.5px] font-semibold text-white shadow-sm transition-colors hover:bg-rose-700 disabled:opacity-60"
               >
                 {isBusy ? "Đang xử lý..." : CONFIRM_TEXT[confirmAction].button}
               </button>
