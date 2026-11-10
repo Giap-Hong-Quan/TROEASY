@@ -14,7 +14,7 @@ const groups = [
     { label: "Tổng quan", icon: LayoutDashboard, path: "/" },
     { label: "Sơ đồ phòng", icon: House, path: "/rooms" },
     { label: "Khách thuê", icon: UsersRound, path: "/tenants" },
-    { label: "Hợp đồng", icon: FileText },
+    { label: "Hợp đồng", icon: FileText, path: "/contracts" },
   ]},
   { title: "VẬN HÀNH", items: [
     { label: "Điện & nước", icon: Zap },

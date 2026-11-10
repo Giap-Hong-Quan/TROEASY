@@ -1,7 +1,9 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Zap, Layers, X, Trash2, AlertTriangle } from "lucide-react";
+import { Modal } from "antd";
+import { Plus, Zap, Layers, X, Trash2, AlertTriangle, Lock } from "lucide-react";
 import toast from "react-hot-toast";
+import { deleteArea } from "../services/ereaService.js";
 import { createRow, deleteRow } from "../services/rowService.js";
 
 const ROOM_STATUS = {
@@ -52,6 +54,29 @@ export default function AreaRoomCard({ area, onAddRoom, onSelectRoom }) {
   const [isCreatingRow, setIsCreatingRow] = useState(false);
   const [newRowName, setNewRowName] = useState("");
   const [rowPendingDelete, setRowPendingDelete] = useState(null);
+
+  // State xác nhận xóa khu trọ
+  const [isConfirmDeleteAreaOpen, setIsConfirmDeleteAreaOpen] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+
+  const deleteAreaMutation = useMutation({
+    mutationFn: deleteArea,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["areas"] });
+      queryClient.invalidateQueries({ queryKey: ["rooms"] });
+      queryClient.invalidateQueries({ queryKey: ["rows"] });
+      queryClient.invalidateQueries({ queryKey: ["tenants"] });
+      toast.success(`Đã xóa khu trọ "${area.name}" thành công!`);
+      setIsConfirmDeleteAreaOpen(false);
+      setDeletePassword("");
+      setPasswordError("");
+    },
+    onError: (error) => {
+      const msg = error.response?.data?.message || error.message || "Xóa khu trọ thất bại.";
+      toast.error(msg);
+    },
+  });
 
   const createRowMutation = useMutation({
     mutationFn: createRow,
@@ -209,6 +234,18 @@ export default function AreaRoomCard({ area, onAddRoom, onSelectRoom }) {
             className="inline-flex h-8 items-center justify-center gap-1 rounded-[8px] bg-[#6756df] px-2.5 text-[11.5px] font-semibold text-white transition-colors hover:bg-[#5b4bc7]"
           >
             <Plus size={12} /> Thêm phòng
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setDeletePassword("");
+              setPasswordError("");
+              setIsConfirmDeleteAreaOpen(true);
+            }}
+            className="inline-flex h-8 items-center justify-center gap-1 rounded-[8px] border border-[#ffd0d6] bg-[#fff5f6] px-2.5 text-[11.5px] font-semibold text-[#dd5262] transition-colors hover:bg-[#ffebee] hover:border-[#fca5af]"
+            title={`Xóa khu trọ ${area.name}`}
+          >
+            <Trash2 size={12} /> Xóa khu
           </button>
         </div>
       </div>
@@ -421,6 +458,110 @@ export default function AreaRoomCard({ area, onAddRoom, onSelectRoom }) {
           </div>
         </div>
       )}
+
+      {/* Modal xác nhận xóa khu với mật khẩu bảo mật 1111 */}
+      <Modal
+        open={isConfirmDeleteAreaOpen}
+        onCancel={() => {
+          if (!deleteAreaMutation.isPending) {
+            setIsConfirmDeleteAreaOpen(false);
+            setDeletePassword("");
+            setPasswordError("");
+          }
+        }}
+        footer={null}
+        closable={false}
+        centered
+        width={420}
+        destroyOnHidden
+        zIndex={1200}
+        styles={{ content: { borderRadius: 20, padding: 24 } }}
+      >
+        <div className="text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50 text-rose-600 ring-8 ring-rose-50/50">
+            <AlertTriangle size={24} />
+          </div>
+
+          <h3 className="mt-3.5 text-base font-extrabold text-[#20243c]">
+            Xóa khu trọ &quot;{area.name}&quot;?
+          </h3>
+
+          <p className="mt-1.5 text-xs leading-relaxed text-[#7d8398]">
+            Hành động này sẽ xóa vĩnh viễn khu trọ cùng toàn bộ{" "}
+            <span className="font-bold text-[#20243c]">{area.rooms.length} phòng</span> và các dãy thuộc khu này.
+            Hồ sơ khách thuê vẫn được bảo toàn trong hệ thống.
+          </p>
+
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (deletePassword !== "1111") {
+                setPasswordError("Mật khẩu không chính xác! Vui lòng nhập đúng 1111.");
+                return;
+              }
+              deleteAreaMutation.mutate(area.id);
+            }}
+            className="mt-4 text-left"
+          >
+            <label className="block text-[11px] font-bold text-[#4b5168]">
+              Nhập mật khẩu xác nhận (1111) để xóa:
+            </label>
+            <div className="relative mt-1.5">
+              <Lock
+                size={14}
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#9da2b4]"
+              />
+              <input
+                type="password"
+                autoFocus
+                value={deletePassword}
+                onChange={(e) => {
+                  setDeletePassword(e.target.value);
+                  if (passwordError) setPasswordError("");
+                }}
+                placeholder="Nhập 1111"
+                className={`h-9 w-full rounded-xl border bg-[#f9f9fc] pl-9 pr-3 text-xs font-bold tracking-wider text-[#20243c] outline-none transition focus:bg-white ${
+                  passwordError
+                    ? "border-rose-400 focus:border-rose-500"
+                    : "border-[#e5e6ee] focus:border-rose-500"
+                }`}
+              />
+            </div>
+            {passwordError ? (
+              <p className="mt-1 text-[11px] font-semibold text-rose-600">
+                {passwordError}
+              </p>
+            ) : (
+              <p className="mt-1 text-[10.5px] text-[#9da2b4]">
+                Mã xác nhận bảo mật: nhập chính xác <span className="font-bold text-[#20243c]">1111</span>.
+              </p>
+            )}
+
+            <div className="mt-5 flex gap-2">
+              <button
+                type="button"
+                disabled={deleteAreaMutation.isPending}
+                onClick={() => {
+                  setIsConfirmDeleteAreaOpen(false);
+                  setDeletePassword("");
+                  setPasswordError("");
+                }}
+                className="flex-1 rounded-xl border border-[#e5e6ee] bg-white py-2 text-xs font-semibold text-[#54596e] transition hover:bg-[#f6f7fb] disabled:opacity-50"
+              >
+                Hủy
+              </button>
+              <button
+                type="submit"
+                disabled={deleteAreaMutation.isPending || deletePassword !== "1111"}
+                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-rose-600 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <Trash2 size={13} />
+                {deleteAreaMutation.isPending ? "Đang xóa..." : "Xác nhận xóa"}
+              </button>
+            </div>
+          </form>
+        </div>
+      </Modal>
     </section>
   );
 }

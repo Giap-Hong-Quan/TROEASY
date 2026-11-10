@@ -1,5 +1,8 @@
 import ApiError from "../exceptions/ApiError.js";
 import Area from "../models/Area.js";
+import Room from "../models/Room.js";
+import Row from "../models/Row.js";
+import Tenant from "../models/Tenant.js";
 
 const toArea = (area) => ({
     id: area._id,
@@ -40,4 +43,26 @@ export const deactivateArea = async (id) => {
     area.isActive = false;
     await area.save();
     return toArea(area);
+};
+
+// Xóa khu vực và các phòng/dãy thuộc khu,
+// bảo toàn hồ sơ khách thuê (chỉ ngắt liên kết roomId về null)
+export const deleteAreaAndRelations = async (id) => {
+    const area = await getAreaOrThrow(id);
+    const areaData = toArea(area);
+
+    // 1. Bảo toàn hồ sơ khách thuê: ngắt liên kết phòng
+    await Tenant.updateMany(
+        { areaId: area._id },
+        { $set: { roomId: null } }
+    );
+
+    // 2. Xóa tất cả các phòng và dãy thuộc khu vực này
+    await Room.deleteMany({ areaId: area._id });
+    await Row.deleteMany({ areaId: area._id });
+
+    // 3. Xóa khu vực khỏi CSDL
+    await area.deleteOne();
+
+    return areaData;
 };

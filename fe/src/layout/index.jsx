@@ -8,6 +8,7 @@ const PAGE_BY_PATH = {
   "/": "Tổng quan",
   "/rooms": "Sơ đồ phòng",
   "/tenants": "Khách thuê",
+  "/contracts": "Hợp đồng",
 };
 
 // Layout chung cho các trang cần đăng nhập.

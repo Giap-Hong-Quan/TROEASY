@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Modal, Spin, Tag, Empty } from "antd";
 import toast from "react-hot-toast";
@@ -17,9 +17,14 @@ import {
   DoorOpen,
   Trash2,
   TriangleAlert,
+  ChevronRight,
+  Pencil,
+  Check,
+  Plus,
 } from "lucide-react";
 import CreateTenantModal from "./CreateTenantModal.jsx";
-import { deleteRoom, getRoomById } from "../services/roomService.js";
+import TenantDetailModal from "./TenantDetailModal.jsx";
+import { deleteRoom, getRoomById, updateRoom } from "../services/roomService.js";
 import { getTenants } from "../services/tenantService.js";
 
 const STATUS_CONFIG = {
@@ -29,6 +34,17 @@ const STATUS_CONFIG = {
   repair: { name: "Đang sửa", dot: "bg-[#d39a3c]", badge: "bg-[#fff2de] text-[#b9822f]" },
   stop: { name: "Tạm ngưng", dot: "bg-[#9aa1ad]", badge: "bg-[#edf0f4] text-[#7f8794]" },
 };
+
+const SUGGESTED_ASSETS = [
+  "Điều hòa",
+  "Bình nóng lạnh",
+  "Tủ lạnh",
+  "Gác lửng",
+  "Kệ bếp",
+  "Giường nệm",
+  "Tủ quần áo",
+  "Wifi",
+];
 
 const formatMoney = (value) => {
   if (value === undefined || value === null || value === "") return "Chưa cập nhật";
@@ -67,11 +83,29 @@ function InfoItem({ icon: Icon, label, value }) {
   );
 }
 
-export default function RoomDetailModal({ isOpen, onClose, room, area, rowLabel }) {
+export default function RoomDetailModal({
+  isOpen,
+  onClose,
+  room,
+  area,
+  rowLabel,
+  rows = [],
+}) {
   const roomId = room?.id || room?._id;
   const queryClient = useQueryClient();
+
   const [isAddTenantOpen, setIsAddTenantOpen] = useState(false);
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
+  const [selectedTenantDetail, setSelectedTenantDetail] = useState(null);
+
+  // State chế độ chỉnh sửa trực tiếp
+  const [isEditing, setIsEditing] = useState(false);
+  const [editCode, setEditCode] = useState("");
+  const [editRowId, setEditRowId] = useState("");
+  const [editBasePrice, setEditBasePrice] = useState("");
+  const [editStatus, setEditStatus] = useState("vacant");
+  const [editAssets, setEditAssets] = useState([]);
+  const [customAssetInput, setCustomAssetInput] = useState("");
 
   const deleteRoomMutation = useMutation({
     mutationFn: () => deleteRoom(roomId),
@@ -81,7 +115,7 @@ export default function RoomDetailModal({ isOpen, onClose, room, area, rowLabel 
       queryClient.removeQueries({ queryKey: ["room", roomId] });
       toast.success(`Đã xóa phòng ${room?.code || ""}.`);
       setIsConfirmDeleteOpen(false);
-      onClose();
+      handleModalClose();
     },
     onError: (error) => {
       toast.error(error.response?.data?.message || "Không thể xóa phòng. Vui lòng thử lại.");
@@ -108,6 +142,98 @@ export default function RoomDetailModal({ isOpen, onClose, room, area, rowLabel 
   const assets = Array.isArray(currentRoom?.assets) ? currentRoom.assets : [];
   const totalDeposit = tenants.reduce((sum, t) => sum + (Number(t.depositAmount) || 0), 0);
 
+  // Lấy danh sách các dãy thuộc khu vực hiện tại
+  const currentAreaId = area?.id || area?._id || currentRoom?.areaId;
+  const areaRows = useMemo(() => {
+    if (!currentAreaId || !Array.isArray(rows)) return [];
+    return rows
+      .filter((r) => String(r.areaId) === String(currentAreaId) && r.isActive !== false)
+      .sort((a, b) => (a.name || "").localeCompare(b.name || "", "vi", { numeric: true }));
+  }, [rows, currentAreaId]);
+
+  // Mutation cập nhật thông tin phòng
+  const updateRoomMutation = useMutation({
+    mutationFn: (payload) => updateRoom(roomId, payload),
+    onSuccess: (updatedRoom) => {
+      queryClient.invalidateQueries({ queryKey: ["rooms"] });
+      queryClient.invalidateQueries({ queryKey: ["room", roomId] });
+      toast.success(`Đã cập nhật thông tin phòng ${updatedRoom?.code || editCode}!`);
+      setIsEditing(false);
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || "Không thể cập nhật phòng. Vui lòng thử lại.");
+    },
+  });
+
+  // Khởi tạo form khi chuyển sang chế độ sửa
+  const handleStartEditing = () => {
+    setEditCode(currentRoom?.code || "");
+    setEditRowId(currentRoom?.rowId?._id || currentRoom?.rowId || "");
+    setEditBasePrice(
+      currentRoom?.basePrice !== undefined && currentRoom?.basePrice !== null
+        ? String(currentRoom.basePrice)
+        : ""
+    );
+    setEditStatus(currentRoom?.status || "vacant");
+    setEditAssets(Array.isArray(currentRoom?.assets) ? [...currentRoom.assets] : []);
+    setCustomAssetInput("");
+    setIsEditing(true);
+  };
+
+  const handleCancelEditing = () => {
+    setIsEditing(false);
+  };
+
+  const handleToggleAsset = (asset) => {
+    setEditAssets((prev) =>
+      prev.includes(asset) ? prev.filter((a) => a !== asset) : [...prev, asset]
+    );
+  };
+
+  const handleAddCustomAsset = () => {
+    const trimmed = customAssetInput.trim();
+    if (!trimmed) return;
+    if (!editAssets.includes(trimmed)) {
+      setEditAssets((prev) => [...prev, trimmed]);
+    }
+    setCustomAssetInput("");
+  };
+
+  const handleSaveEdit = () => {
+    const trimmedCode = editCode.trim().toUpperCase();
+    if (!trimmedCode) {
+      toast.error("Mã phòng không được để trống.");
+      return;
+    }
+    const priceNum = editBasePrice === "" ? 0 : Number(editBasePrice);
+    if (Number.isNaN(priceNum) || priceNum < 0) {
+      toast.error("Giá thuê không hợp lệ.");
+      return;
+    }
+
+    const payload = {
+      code: trimmedCode,
+      basePrice: priceNum,
+      status: editStatus,
+      assets: editAssets,
+    };
+
+    if (editRowId) {
+      payload.rowId = editRowId;
+      const foundRow = areaRows.find((r) => String(r.id || r._id) === String(editRowId));
+      if (foundRow) payload.row = foundRow.name;
+    } else {
+      payload.rowId = null;
+    }
+
+    updateRoomMutation.mutate(payload);
+  };
+
+  const handleModalClose = () => {
+    setIsEditing(false);
+    onClose?.();
+  };
+
   // Đại diện hợp đồng luôn đứng đầu danh sách
   const sortedTenants = [...tenants].sort(
     (a, b) => Number(b.isRepresentative) - Number(a.isRepresentative)
@@ -117,7 +243,7 @@ export default function RoomDetailModal({ isOpen, onClose, room, area, rowLabel 
     <>
       <Modal
         open={isOpen}
-        onCancel={onClose}
+        onCancel={handleModalClose}
         footer={null}
         closable={false}
         centered
@@ -126,7 +252,7 @@ export default function RoomDetailModal({ isOpen, onClose, room, area, rowLabel 
         styles={{ content: { padding: 0, overflow: "hidden", borderRadius: 20 } }}
       >
         {currentRoom && (
-          <Spin spinning={isFetchingRoom || isFetchingTenants}>
+          <Spin spinning={isFetchingRoom || isFetchingTenants || updateRoomMutation.isPending}>
             {/* ===== HEADER ===== */}
             <div className="relative overflow-hidden bg-gradient-to-br from-[#6756df] via-[#7a63e6] to-[#9c75f0] px-6 pb-5 pt-5 text-white">
               <div className="pointer-events-none absolute -right-10 -top-14 h-44 w-44 rounded-full bg-white/10" />
@@ -134,7 +260,7 @@ export default function RoomDetailModal({ isOpen, onClose, room, area, rowLabel 
 
               <button
                 type="button"
-                onClick={onClose}
+                onClick={handleModalClose}
                 aria-label="Đóng"
                 className="absolute right-4 top-4 rounded-lg p-1.5 text-white/80 transition hover:bg-white/15 hover:text-white"
               >
@@ -149,12 +275,17 @@ export default function RoomDetailModal({ isOpen, onClose, room, area, rowLabel 
                   <div>
                     <div className="flex items-center gap-2">
                       <h2 className="text-[22px] font-extrabold leading-tight tracking-tight">
-                        Phòng {code}
+                        Phòng {isEditing ? editCode || code : code}
                       </h2>
                       <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-0.5 text-[11px] font-bold text-[#20243c]">
                         <span className={`h-1.5 w-1.5 rounded-full ${status.dot}`} />
-                        {status.name}
+                        {isEditing ? STATUS_CONFIG[editStatus]?.name || editStatus : status.name}
                       </span>
+                      {isEditing && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-400/90 px-2.5 py-0.5 text-[10.5px] font-extrabold text-amber-950 shadow-sm">
+                          <Pencil size={11} /> Đang chỉnh sửa
+                        </span>
+                      )}
                     </div>
                     <p className="mt-1 flex items-center gap-1.5 text-xs text-white/85">
                       <MapPin size={12} />
@@ -168,7 +299,7 @@ export default function RoomDetailModal({ isOpen, onClose, room, area, rowLabel 
                   <div className="rounded-xl bg-white/15 px-3.5 py-2 ring-1 ring-white/20 backdrop-blur">
                     <p className="text-[10px] font-semibold uppercase tracking-wide text-white/75">Giá thuê</p>
                     <p className="text-sm font-extrabold">
-                      {formatMoney(currentRoom.basePrice)}
+                      {formatMoney(isEditing ? editBasePrice : currentRoom.basePrice)}
                       <span className="text-[10px] font-medium text-white/75"> /tháng</span>
                     </p>
                   </div>
@@ -182,7 +313,7 @@ export default function RoomDetailModal({ isOpen, onClose, room, area, rowLabel 
 
             {/* ===== BODY ===== */}
             <div className="grid max-h-[65vh] grid-cols-1 gap-5 overflow-y-auto bg-white p-6 md:grid-cols-5">
-              {/* LEFT: Người thuê */}
+              {/* LEFT: Người thuê (chiếm 3 cột) */}
               <section className="md:col-span-3">
                 <div className="mb-3 flex items-center justify-between">
                   <h3 className="flex items-center gap-2 text-sm font-bold text-[#20243c]">
@@ -207,14 +338,16 @@ export default function RoomDetailModal({ isOpen, onClose, room, area, rowLabel 
                     {sortedTenants.map((tenant) => (
                       <div
                         key={tenant._id}
-                        className={`group flex items-center gap-3 rounded-xl border p-3 transition hover:shadow-sm ${
+                        onClick={() => setSelectedTenantDetail(tenant)}
+                        className={`group flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition hover:shadow-md hover:border-[#aa9cf5] ${
                           tenant.isRepresentative
-                            ? "border-[#dcd6fb] bg-[#faf9ff]"
-                            : "border-[#f0f0f6] bg-white hover:border-[#e4e1f8]"
+                            ? "border-[#dcd6fb] bg-[#faf9ff] hover:bg-[#f5f2fe]"
+                            : "border-[#f0f0f6] bg-white hover:bg-[#fbfaff]"
                         }`}
+                        title="Bấm để xem chi tiết người thuê này"
                       >
                         <div
-                          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white ${
+                          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white shadow-sm transition group-hover:scale-105 ${
                             tenant.isRepresentative
                               ? "bg-gradient-to-tr from-[#6756df] to-[#9c75f0]"
                               : "bg-gradient-to-tr from-[#94a3b8] to-[#b6c0cf]"
@@ -225,7 +358,9 @@ export default function RoomDetailModal({ isOpen, onClose, room, area, rowLabel 
 
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1.5">
-                            <p className="truncate text-[13px] font-bold text-[#20243c]">{tenant.fullName}</p>
+                            <p className="truncate text-[13px] font-bold text-[#20243c] group-hover:text-[#6756df] transition-colors">
+                              {tenant.fullName}
+                            </p>
                             {tenant.isRepresentative && (
                               <span className="inline-flex items-center gap-1 rounded-md bg-[#fff4dc] px-1.5 py-0.5 text-[10px] font-bold text-[#b9822f]">
                                 <Crown size={10} />
@@ -248,12 +383,20 @@ export default function RoomDetailModal({ isOpen, onClose, room, area, rowLabel 
                           </div>
                         </div>
 
-                        {tenant.depositAmount > 0 && (
-                          <div className="shrink-0 text-right">
-                            <p className="text-[10px] text-[#9da2b4]">Tiền cọc</p>
-                            <p className="text-xs font-bold text-[#6756df]">{formatMoney(tenant.depositAmount)}</p>
-                          </div>
-                        )}
+                        <div className="flex items-center gap-2">
+                          {tenant.depositAmount > 0 && (
+                            <div className="shrink-0 text-right">
+                              <p className="text-[10px] text-[#9da2b4]">Tiền cọc</p>
+                              <p className="text-xs font-bold text-[#6756df]">
+                                {formatMoney(tenant.depositAmount)}
+                              </p>
+                            </div>
+                          )}
+                          <ChevronRight
+                            size={15}
+                            className="text-[#a4a9bc] transition group-hover:translate-x-0.5 group-hover:text-[#6756df]"
+                          />
+                        </div>
                       </div>
                     ))}
 
@@ -282,57 +425,287 @@ export default function RoomDetailModal({ isOpen, onClose, room, area, rowLabel 
                 )}
               </section>
 
-              {/* RIGHT: Thông tin phòng */}
+              {/* RIGHT: Thông tin phòng & Chỉnh sửa (chiếm 2 cột) */}
               <aside className="space-y-4 md:col-span-2">
-                <div>
-                  <h3 className="mb-2.5 text-[11px] font-extrabold uppercase tracking-[0.8px] text-[#9da2b4]">
-                    Thông tin phòng
-                  </h3>
-                  <div className="space-y-2">
-                    <InfoItem icon={Banknote} label="Giá thuê cơ bản" value={`${formatMoney(currentRoom.basePrice)} / tháng`} />
-                    <InfoItem icon={Layers} label="Dãy phòng" value={rowName} />
-                    <InfoItem icon={MapPin} label="Địa chỉ" value={area?.address || area?.name || "—"} />
-                    <InfoItem icon={CalendarClock} label="Cập nhật cuối" value={formatDate(currentRoom.updatedAt, true)} />
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="mb-2.5 flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-[0.8px] text-[#9da2b4]">
-                    <Sparkles size={13} className="text-[#6756df]" />
-                    Tiện ích & nội thất ({assets.length})
-                  </h3>
-                  {assets.length > 0 ? (
-                    <div className="flex flex-wrap gap-1.5">
-                      {assets.map((item) => (
-                        <Tag key={item} className="m-0 rounded-lg border-[#e4e1f8] bg-[#f8f7ff] px-2.5 py-0.5 text-[11px] font-semibold text-[#5644d8]">
-                          {item}
-                        </Tag>
-                      ))}
+                {isEditing ? (
+                  /* ================= FORM CHỈNH SỬA TRỰC TIẾP ================= */
+                  <div className="space-y-3 rounded-2xl border border-[#dcd6fb] bg-[#fbfaff] p-3.5 shadow-sm">
+                    <div className="flex items-center justify-between border-b border-[#ece8fd] pb-2">
+                      <h3 className="flex items-center gap-1.5 text-[12px] font-extrabold uppercase tracking-[0.6px] text-[#6756df]">
+                        <Pencil size={13} />
+                        Chỉnh sửa thông tin
+                      </h3>
+                      <button
+                        type="button"
+                        onClick={handleCancelEditing}
+                        className="text-[11px] font-semibold text-[#8c92a6] hover:text-[#20243c]"
+                      >
+                        Hủy
+                      </button>
                     </div>
-                  ) : (
-                    <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Chưa có tiện ích" className="my-1" />
-                  )}
-                </div>
+
+                    {/* Mã phòng */}
+                    <div>
+                      <label className="mb-1 block text-[11px] font-bold text-[#4b5168]">
+                        Mã phòng <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={editCode}
+                        onChange={(e) => setEditCode(e.target.value.toUpperCase())}
+                        placeholder="VD: P101"
+                        className="h-8 w-full rounded-xl border border-[#e5e6ee] bg-white px-3 text-xs font-bold text-[#20243c] outline-none transition focus:border-[#6756df]"
+                      />
+                    </div>
+
+                    {/* Dãy phòng */}
+                    <div>
+                      <label className="mb-1 block text-[11px] font-bold text-[#4b5168]">
+                        Dãy phòng
+                      </label>
+                      <select
+                        value={editRowId}
+                        onChange={(e) => setEditRowId(e.target.value)}
+                        className="h-8 w-full cursor-pointer appearance-none rounded-xl border border-[#e5e6ee] bg-white px-3 text-xs font-semibold text-[#20243c] outline-none transition focus:border-[#6756df]"
+                      >
+                        <option value="">Chưa phân dãy</option>
+                        {areaRows.map((r) => (
+                          <option key={r.id || r._id} value={r.id || r._id}>
+                            {r.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Giá thuê */}
+                    <div>
+                      <label className="mb-1 block text-[11px] font-bold text-[#4b5168]">
+                        Giá thuê cơ bản (VNĐ)
+                      </label>
+                      <input
+                        type="number"
+                        value={editBasePrice}
+                        onChange={(e) => setEditBasePrice(e.target.value)}
+                        placeholder="VD: 3000000"
+                        className="h-8 w-full rounded-xl border border-[#e5e6ee] bg-white px-3 text-xs font-bold text-[#20243c] outline-none transition focus:border-[#6756df]"
+                      />
+                    </div>
+
+                    {/* Trạng thái phòng */}
+                    <div>
+                      <label className="mb-1 block text-[11px] font-bold text-[#4b5168]">
+                        Trạng thái phòng
+                      </label>
+                      <select
+                        value={editStatus}
+                        onChange={(e) => setEditStatus(e.target.value)}
+                        className="h-8 w-full cursor-pointer appearance-none rounded-xl border border-[#e5e6ee] bg-white px-3 text-xs font-semibold text-[#20243c] outline-none transition focus:border-[#6756df]"
+                      >
+                        <option value="vacant">Trống</option>
+                        <option value="renting">Đang thuê</option>
+                        <option value="deposit">Đã cọc</option>
+                        <option value="repair">Đang sửa</option>
+                        <option value="stop">Tạm ngưng</option>
+                      </select>
+                    </div>
+
+                    {/* Tiện ích */}
+                    <div className="pt-1">
+                      <label className="mb-1.5 block text-[11px] font-bold text-[#4b5168]">
+                        Tiện ích & nội thất ({editAssets.length})
+                      </label>
+                      <div className="mb-2 flex flex-wrap gap-1.5">
+                        {SUGGESTED_ASSETS.map((asset) => {
+                          const isSelected = editAssets.includes(asset);
+                          return (
+                            <button
+                              key={asset}
+                              type="button"
+                              onClick={() => handleToggleAsset(asset)}
+                              className={`rounded-lg border px-2 py-0.5 text-[10.5px] font-semibold transition ${
+                                isSelected
+                                  ? "border-[#6756df] bg-[#efedff] text-[#6756df]"
+                                  : "border-[#e5e6ee] bg-white text-[#6b7280] hover:border-[#cfd3e4]"
+                              }`}
+                            >
+                              {asset} {isSelected && "✓"}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Thêm tiện ích khác */}
+                      <div className="flex gap-1.5">
+                        <input
+                          type="text"
+                          value={customAssetInput}
+                          onChange={(e) => setCustomAssetInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              handleAddCustomAsset();
+                            }
+                          }}
+                          placeholder="Thêm tiện ích khác..."
+                          className="h-7 flex-1 rounded-lg border border-[#e5e6ee] bg-white px-2 text-[11px] outline-none focus:border-[#6756df]"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleAddCustomAsset}
+                          className="inline-flex h-7 items-center gap-1 rounded-lg border border-[#dcd6fb] bg-[#f8f7ff] px-2 text-[11px] font-bold text-[#6756df] transition hover:bg-[#efeaff]"
+                        >
+                          <Plus size={11} /> Thêm
+                        </button>
+                      </div>
+
+                      {/* Tiện ích tùy chỉnh đã thêm */}
+                      {editAssets.filter((a) => !SUGGESTED_ASSETS.includes(a)).length > 0 && (
+                        <div className="mt-1.5 flex flex-wrap gap-1">
+                          {editAssets
+                            .filter((a) => !SUGGESTED_ASSETS.includes(a))
+                            .map((asset) => (
+                              <span
+                                key={asset}
+                                className="inline-flex items-center gap-1 rounded-md border border-[#6756df] bg-[#efedff] px-1.5 py-0.5 text-[10px] font-semibold text-[#6756df]"
+                              >
+                                {asset}
+                                <button
+                                  type="button"
+                                  onClick={() => handleToggleAsset(asset)}
+                                  className="text-[#6756df] hover:text-red-500"
+                                >
+                                  <X size={10} />
+                                </button>
+                              </span>
+                            ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  /* ================= CHẾ ĐỘ XEM CHI TIẾT ================= */
+                  <>
+                    <div>
+                      <div className="mb-2.5 flex items-center justify-between">
+                        <h3 className="text-[11px] font-extrabold uppercase tracking-[0.8px] text-[#9da2b4]">
+                          Thông tin phòng
+                        </h3>
+                        <button
+                          type="button"
+                          onClick={handleStartEditing}
+                          className="inline-flex items-center gap-1 text-[11px] font-bold text-[#6756df] hover:underline"
+                        >
+                          <Pencil size={11} /> Chỉnh sửa
+                        </button>
+                      </div>
+                      <div className="space-y-2">
+                        <InfoItem
+                          icon={Banknote}
+                          label="Giá thuê cơ bản"
+                          value={`${formatMoney(currentRoom.basePrice)} / tháng`}
+                        />
+                        <InfoItem icon={Layers} label="Dãy phòng" value={rowName} />
+                        <InfoItem
+                          icon={MapPin}
+                          label="Địa chỉ"
+                          value={area?.address || area?.name || "—"}
+                        />
+                        <InfoItem
+                          icon={CalendarClock}
+                          label="Cập nhật cuối"
+                          value={formatDate(currentRoom.updatedAt, true)}
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <h3 className="mb-2.5 flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-[0.8px] text-[#9da2b4]">
+                        <Sparkles size={13} className="text-[#6756df]" />
+                        Tiện ích & nội thất ({assets.length})
+                      </h3>
+                      {assets.length > 0 ? (
+                        <div className="flex flex-wrap gap-1.5">
+                          {assets.map((item) => (
+                            <Tag
+                              key={item}
+                              className="m-0 rounded-lg border-[#e4e1f8] bg-[#f8f7ff] px-2.5 py-0.5 text-[11px] font-semibold text-[#5644d8]"
+                            >
+                              {item}
+                            </Tag>
+                          ))}
+                        </div>
+                      ) : (
+                        <Empty
+                          image={Empty.PRESENTED_IMAGE_SIMPLE}
+                          description="Chưa có tiện ích"
+                          className="my-1"
+                        />
+                      )}
+                    </div>
+                  </>
+                )}
               </aside>
             </div>
 
             {/* ===== FOOTER ===== */}
             <div className="flex items-center justify-between gap-3 border-t border-[#f0f0f6] bg-[#fafafc] px-6 py-3.5">
-              <button
-                type="button"
-                onClick={() => setIsConfirmDeleteOpen(true)}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-[#ffd0d6] bg-white px-3 py-1.5 text-xs font-bold text-[#dd5262] transition hover:bg-[#fff1f3]"
-              >
-                <Trash2 size={14} />
-                Xóa phòng
-              </button>
-              <button
-                type="button"
-                onClick={onClose}
-                className="rounded-lg border border-[#e5e6ee] bg-white px-4 py-1.5 text-xs font-semibold text-[#54596e] transition hover:bg-[#f3f4f8]"
-              >
-                Đóng
-              </button>
+              <div>
+                {!isEditing ? (
+                  <button
+                    type="button"
+                    onClick={() => setIsConfirmDeleteOpen(true)}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-[#ffd0d6] bg-white px-3 py-1.5 text-xs font-bold text-[#dd5262] transition hover:bg-[#fff1f3]"
+                  >
+                    <Trash2 size={14} />
+                    Xóa phòng
+                  </button>
+                ) : (
+                  <span className="text-[11px] font-medium text-[#8c92a6]">
+                    * Nhấn Lưu thay đổi để hoàn tất cập nhật thông tin phòng.
+                  </span>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2">
+                {!isEditing ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={handleStartEditing}
+                      className="inline-flex items-center gap-1.5 rounded-xl border border-[#dcd6fb] bg-[#f1effe] px-3.5 py-1.5 text-xs font-bold text-[#6756df] transition hover:bg-[#e6e2fd] active:scale-[0.98]"
+                    >
+                      <Pencil size={13} />
+                      Chỉnh sửa
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleModalClose}
+                      className="rounded-xl border border-[#e5e6ee] bg-white px-4 py-1.5 text-xs font-semibold text-[#54596e] transition hover:bg-[#f3f4f8]"
+                    >
+                      Đóng
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      onClick={handleCancelEditing}
+                      className="rounded-xl border border-[#e5e6ee] bg-white px-3.5 py-1.5 text-xs font-semibold text-[#54596e] transition hover:bg-[#f3f4f8]"
+                    >
+                      Hủy
+                    </button>
+                    <button
+                      type="button"
+                      disabled={updateRoomMutation.isPending}
+                      onClick={handleSaveEdit}
+                      className="inline-flex items-center gap-1.5 rounded-xl bg-[#6756df] px-4 py-1.5 text-xs font-bold text-white shadow-sm transition hover:bg-[#5645ce] active:scale-[0.98] disabled:opacity-60"
+                    >
+                      <Check size={14} />
+                      {updateRoomMutation.isPending ? "Đang lưu..." : "Lưu thay đổi"}
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
           </Spin>
         )}
@@ -390,7 +763,13 @@ export default function RoomDetailModal({ isOpen, onClose, room, area, rowLabel 
         area={area}
         room={currentRoom}
       />
+
+      <TenantDetailModal
+        isOpen={Boolean(selectedTenantDetail)}
+        onClose={() => setSelectedTenantDetail(null)}
+        tenant={selectedTenantDetail}
+        zIndex={1300}
+      />
     </>
   );
 }
-

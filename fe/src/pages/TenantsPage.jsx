@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search, Phone, MapPin, Building2, SlidersHorizontal, Loader2, CreditCard } from "lucide-react";
+import { Search, Phone, MapPin, Building2, Loader2, CreditCard } from "lucide-react";
+import AreaSearchDropdown from "../components/AreaSearchDropdown.jsx";
+import TenantDetailModal from "../components/TenantDetailModal.jsx";
 import { getAreas } from "../services/ereaService.js";
 import { getTenants } from "../services/tenantService.js";
 
@@ -42,6 +44,7 @@ export default function TenantsPage({
 }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedArea, setSelectedArea] = useState("");
+  const [selectedTenant, setSelectedTenant] = useState(null);
 
   // 1. Gọi API Lấy danh sách Khách thuê từ Backend
   const {
@@ -98,7 +101,7 @@ export default function TenantsPage({
         {/* Search Input */}
         <div className="relative min-w-[240px] flex-1 sm:max-w-xs">
           <Search
-            size={15}
+            size={14}
             className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#9da2b4]"
           />
           <input
@@ -106,32 +109,16 @@ export default function TenantsPage({
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Tìm tên khách, phòng, SĐT, CCCD..."
-            className="w-full rounded-xl border border-[#e5e6ee] bg-[#f9f9fc] py-1.5 pl-9 pr-3 text-xs text-[#20243c] placeholder-[#9da2b4] transition focus:border-[#6756df] focus:bg-white focus:outline-none"
+            className="h-9 w-full rounded-xl border border-[#e5e6ee] bg-[#f9f9fc] pl-9 pr-3 text-[12px] text-[#20243c] placeholder-[#9da2b4] transition focus:border-[#6756df] focus:bg-white focus:outline-none"
           />
         </div>
 
-        {/* Filter Area Select */}
-        <div className="relative">
-          <select
-            value={selectedArea}
-            onChange={(e) => setSelectedArea(e.target.value)}
-            className="cursor-pointer appearance-none rounded-xl border border-[#e5e6ee] bg-[#f9f9fc] py-1.5 pl-3 pr-8 text-xs font-medium text-[#4b5168] transition hover:border-[#d0d3e2] focus:border-[#6756df] focus:bg-white focus:outline-none"
-          >
-            <option value="">Tất cả khu vực</option>
-            {areasData.map((area) => {
-              const aId = area._id || area.id;
-              return (
-                <option key={aId} value={aId}>
-                  {area.name}
-                </option>
-              );
-            })}
-          </select>
-          <SlidersHorizontal
-            size={12}
-            className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[#8c92a6]"
-          />
-        </div>
+        {/* Filter Area Dropdown (giống Sơ đồ phòng) */}
+        <AreaSearchDropdown
+          areas={areasData}
+          selectedAreaId={selectedArea}
+          onSelectArea={(areaId) => setSelectedArea(areaId)}
+        />
 
         {/* Total stats pill */}
         <div className="ml-auto flex items-center gap-1.5 rounded-lg bg-[#f4f3fd] px-2.5 py-1 text-[11px] font-semibold text-[#6756df]">
@@ -222,13 +209,19 @@ export default function TenantsPage({
                       </td>
 
                       {/* Khách thuê */}
-                      <td className="px-4 py-3.5">
-                        <div className="flex items-center gap-2.5">
-                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-[#6756df] to-[#9c75f0] text-[11px] font-bold text-white shadow-sm">
+                      <td
+                        className="px-4 py-3.5 cursor-pointer"
+                        onClick={() => {
+                          if (onViewTenant) onViewTenant(tenant);
+                          else setSelectedTenant(tenant);
+                        }}
+                      >
+                        <div className="flex items-center gap-2.5 group/name">
+                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-[#6756df] to-[#9c75f0] text-[11px] font-bold text-white shadow-sm transition group-hover/name:scale-110">
                             {getAvatarInitial(tenant.fullName)}
                           </div>
                           <div>
-                            <p className="font-bold text-[#20243c]">
+                            <p className="font-bold text-[#20243c] group-hover/name:text-[#6756df] transition-colors">
                               {tenant.fullName}
                             </p>
                             <span className="text-[10px] text-[#9095aa]">
@@ -282,7 +275,10 @@ export default function TenantsPage({
                         <div className="flex items-center justify-end gap-1.5">
                           <button
                             type="button"
-                            onClick={() => onViewTenant?.(tenant)}
+                            onClick={() => {
+                              if (onViewTenant) onViewTenant(tenant);
+                              else setSelectedTenant(tenant);
+                            }}
                             className="rounded-lg border border-[#e5e6ee] bg-white px-2.5 py-1 text-[11px] font-semibold text-[#54596e] transition hover:border-[#c7befb] hover:bg-[#faf9ff] hover:text-[#624dd5]"
                           >
                             Chi tiết
@@ -325,6 +321,13 @@ export default function TenantsPage({
           </div>
         )}
       </div>
+
+      {/* Modal Chi tiết khách thuê */}
+      <TenantDetailModal
+        isOpen={Boolean(selectedTenant)}
+        onClose={() => setSelectedTenant(null)}
+        tenant={selectedTenant}
+      />
     </div>
   );
 }

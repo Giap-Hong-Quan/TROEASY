@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search, ChevronDown } from "lucide-react";
+import { Search, ChevronDown, Plus } from "lucide-react";
 import AreaRoomCard from "../components/AreaRoomCard.jsx";
+import CreateAreaModal from "../components/CreateAreaModal.jsx";
 import CreateRoomModal from "../components/CreateRoomModal.jsx";
 import RoomDetailModal from "../components/RoomDetailModal.jsx";
 import { getAreas } from "../services/ereaService.js";
@@ -12,6 +13,7 @@ export default function RoomMap() {
   const [areaQuery, setAreaQuery] = useState("");
   const [selectedAreaId, setSelectedAreaId] = useState("");
   const [areaOptionsOpen, setAreaOptionsOpen] = useState(false);
+  const [isCreateAreaOpen, setIsCreateAreaOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [modalDefaultAreaId, setModalDefaultAreaId] = useState("");
   const [modalDefaultRowId, setModalDefaultRowId] = useState("");
@@ -108,6 +110,14 @@ export default function RoomMap() {
             <h1 className="text-[19px] font-extrabold tracking-[-0.5px] text-[#24283d]">Sơ đồ phòng</h1>
             <p className="mt-0.5 text-[11.5px] text-[#969baa]">Quản lý trạng thái và thông tin phòng</p>
           </div>
+          <button
+            type="button"
+            onClick={() => setIsCreateAreaOpen(true)}
+            className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#6756df] px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-[#5645ce] active:scale-[0.98]"
+          >
+            <Plus size={15} />
+            Thêm khu
+          </button>
         </div>
 
         <div ref={areaSelectRef} className="relative w-full max-w-[240px]">
@@ -220,6 +230,11 @@ export default function RoomMap() {
         )}
       </div>
 
+      <CreateAreaModal
+        isOpen={isCreateAreaOpen}
+        onClose={() => setIsCreateAreaOpen(false)}
+      />
+
       <CreateRoomModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
@@ -235,6 +250,7 @@ export default function RoomMap() {
         room={selectedRoomDetail?.room}
         area={selectedRoomDetail?.area}
         rowLabel={selectedRoomDetail?.rowLabel}
+        rows={rowsData}
       />
     </div>
   );

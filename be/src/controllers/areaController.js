@@ -1,6 +1,7 @@
 import {
     createArea as createAreaService,
     deactivateArea,
+    deleteAreaAndRelations,
     getAreaById,
     listAreas,
     updateArea as updateAreaService,
@@ -43,8 +44,8 @@ export const updateAreaController = async (req, res, next) => {
 
 export const deleteArea = async (req, res, next) => {
     try {
-        const area = await deactivateArea(req.params.id);
-        return success(res, { area }, "Đã ngừng hoạt động khu vực.", 200);
+        const area = await deleteAreaAndRelations(req.params.id);
+        return success(res, { area }, "Đã xóa khu vực thành công.", 200);
     } catch (error) {
         return next(error);
     }

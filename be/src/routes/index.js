@@ -1,6 +1,7 @@
 import express from "express";
 import areaRouter from "./areaRoutes.js";
 import authRouter from "./authRoutes.js";
+import contractRouter from "./contractRoutes.js";
 import roomRouter from "./roomRoutes.js";
 import rowRouter from "./rowRoutes.js";
 import tenantRouter from "./tenantRoutes.js";
@@ -13,5 +14,6 @@ router.use("/areas", areaRouter);
 router.use("/rows", rowRouter);
 router.use("/rooms", roomRouter);
 router.use("/tenants", tenantRouter);
+router.use("/contracts", contractRouter);
 
 export default router;

@@ -5,6 +5,7 @@ import DashboardPage from "../pages/DashboardPage.jsx";
 import LoginPage from "../pages/LoginPage.jsx";
 import RoomMap from "../pages/RoomMap.jsx";
 import TenantsPage from "../pages/TenantsPage.jsx";
+import ContractsPage from "../pages/ContractsPage.jsx";
 
 const router = createBrowserRouter([
     {
@@ -30,6 +31,10 @@ const router = createBrowserRouter([
                     {
                         path: "tenants",
                         element: <TenantsPage />,
+                    },
+                    {
+                        path: "contracts",
+                        element: <ContractsPage />,
                     },
                 ],
             },
