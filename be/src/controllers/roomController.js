@@ -2,6 +2,7 @@ import {
     createRoom as createRoomService,
     deleteRoomAndTenants,
     getRoomById,
+    getRoomOccupancyStats,
     listRooms,
     updateRoom as updateRoomService,
 } from "../services/roomService.js";
@@ -47,6 +48,15 @@ export const deleteRoom = async (req, res, next) => {
     try {
         const result = await deleteRoomAndTenants(req.params.id);
         return success(res, result, "Đã xóa phòng thành công.", 200);
+    } catch (error) {
+        return next(error);
+    }
+};
+
+export const getOccupancyStats = async (req, res, next) => {
+    try {
+        const stats = await getRoomOccupancyStats(req.query);
+        return success(res, { stats }, "Lấy thống kê tỷ lệ lấp đầy phòng thành công.", 200);
     } catch (error) {
         return next(error);
     }

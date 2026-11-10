@@ -25,3 +25,8 @@ export const deleteRoom = async (id) => {
     return response?.data?.room;
 };
 
+export const getRoomOccupancyStats = async (params) => {
+    const response = await apiClient.get("/rooms/stats/occupancy", { params });
+    return response?.data?.stats;
+};
+

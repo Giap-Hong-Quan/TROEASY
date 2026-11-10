@@ -2,6 +2,7 @@ import express from "express";
 import {
     createRoomController,
     deleteRoom,
+    getOccupancyStats,
     getRoom,
     getRooms,
     updateRoomController,
@@ -101,6 +102,9 @@ roomRouter.use(verifyToken);
  *       401:
  *         description: Thiếu hoặc sai token
  */
+roomRouter.route("/stats/occupancy")
+    .get(getOccupancyStats);
+
 roomRouter.route("/")
     .post(validate(createRoomSchema), createRoomController)
     .get(validate(listRoomsSchema), getRooms);

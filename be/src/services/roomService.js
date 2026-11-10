@@ -166,3 +166,27 @@ export const deleteRoomAndTenants = async (id) => {
         room: roomData,
     };
 };
+
+export const getRoomOccupancyStats = async (filters = {}) => {
+    const query = {};
+    if (filters.areaId) query.areaId = filters.areaId;
+
+    const totalRooms = await Room.countDocuments(query);
+    const rentingRooms = await Room.countDocuments({ ...query, status: "renting" });
+    const vacantRooms = await Room.countDocuments({ ...query, status: "vacant" });
+    const depositRooms = await Room.countDocuments({ ...query, status: "deposit" });
+    const repairRooms = await Room.countDocuments({ ...query, status: "repair" });
+    const stopRooms = await Room.countDocuments({ ...query, status: "stop" });
+
+    const occupancyRate = totalRooms > 0 ? Math.round((rentingRooms / totalRooms) * 100) : 0;
+
+    return {
+        totalRooms,
+        rentingRooms,
+        vacantRooms,
+        depositRooms,
+        repairRooms,
+        stopRooms,
+        occupancyRate, // VD: 65 (tính theo %)
+    };
+};
