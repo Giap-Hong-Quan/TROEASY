@@ -1,5 +1,6 @@
 import ApiError from "../exceptions/ApiError.js";
 import Area from "../models/Area.js";
+import Expense from "../models/Expense.js";
 import Room from "../models/Room.js";
 import Row from "../models/Row.js";
 import Tenant from "../models/Tenant.js";
@@ -57,9 +58,10 @@ export const deleteAreaAndRelations = async (id) => {
         { $set: { roomId: null } }
     );
 
-    // 2. Xóa tất cả các phòng và dãy thuộc khu vực này
+    // 2. Xóa tất cả các phòng, dãy và khoản chi thuộc khu vực này
     await Room.deleteMany({ areaId: area._id });
     await Row.deleteMany({ areaId: area._id });
+    await Expense.deleteMany({ areaId: area._id });
 
     // 3. Xóa khu vực khỏi CSDL
     await area.deleteOne();

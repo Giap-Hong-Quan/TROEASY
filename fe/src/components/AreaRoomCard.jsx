@@ -1,9 +1,10 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Modal } from "antd";
-import { Plus, Zap, Layers, X, Trash2, AlertTriangle, Lock } from "lucide-react";
+import { Plus, Zap, Layers, X, Trash2, AlertTriangle, Lock, ReceiptText } from "lucide-react";
 import toast from "react-hot-toast";
 import { DELETE_PASSWORD } from "../constants/security.js";
+import AreaExpenseModal from "./AreaExpenseModal.jsx";
 import { deleteArea } from "../services/ereaService.js";
 import { createRow, deleteRow } from "../services/rowService.js";
 
@@ -62,6 +63,9 @@ export default function AreaRoomCard({ area, onAddRoom, onSelectRoom }) {
   const [isConfirmDeleteAreaOpen, setIsConfirmDeleteAreaOpen] = useState(false);
   const [deletePassword, setDeletePassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
+
+  // State modal khoản chi của khu
+  const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
 
   const deleteAreaMutation = useMutation({
     mutationFn: deleteArea,
@@ -218,6 +222,13 @@ export default function AreaRoomCard({ area, onAddRoom, onSelectRoom }) {
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-1.5 sm:shrink-0">
+          <button
+            type="button"
+            onClick={() => setIsExpenseModalOpen(true)}
+            className="inline-flex h-8 items-center justify-center gap-1 rounded-[8px] border border-[#e5e6ef] bg-white px-2.5 text-[11.5px] font-semibold text-[#66697c] transition-colors hover:bg-slate-50"
+          >
+            <ReceiptText size={12} className="text-amber-600" /> Khoản chi
+          </button>
           <button
             type="button"
             className="inline-flex h-8 items-center justify-center gap-1 rounded-[8px] border border-[#e5e6ef] bg-white px-2.5 text-[11.5px] font-semibold text-[#66697c] transition-colors hover:bg-slate-50"
@@ -614,6 +625,13 @@ export default function AreaRoomCard({ area, onAddRoom, onSelectRoom }) {
           </form>
         </div>
       </Modal>
+
+      {/* Modal quản lý khoản chi theo khu */}
+      <AreaExpenseModal
+        isOpen={isExpenseModalOpen}
+        onClose={() => setIsExpenseModalOpen(false)}
+        area={area}
+      />
     </section>
   );
 }
