@@ -5,6 +5,7 @@ import { Plus, Zap, Layers, X, Trash2, AlertTriangle, Lock, ReceiptText } from "
 import toast from "react-hot-toast";
 import { DELETE_PASSWORD } from "../constants/security.js";
 import AreaExpenseModal from "./AreaExpenseModal.jsx";
+import AreaUtilityModal from "./AreaUtilityModal.jsx";
 import { deleteArea } from "../services/ereaService.js";
 import { createRow, deleteRow } from "../services/rowService.js";
 
@@ -66,6 +67,9 @@ export default function AreaRoomCard({ area, onAddRoom, onSelectRoom }) {
 
   // State modal khoản chi của khu
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
+
+  // State modal nhập điện nước của khu
+  const [isUtilityModalOpen, setIsUtilityModalOpen] = useState(false);
 
   const deleteAreaMutation = useMutation({
     mutationFn: deleteArea,
@@ -231,6 +235,7 @@ export default function AreaRoomCard({ area, onAddRoom, onSelectRoom }) {
           </button>
           <button
             type="button"
+            onClick={() => setIsUtilityModalOpen(true)}
             className="inline-flex h-8 items-center justify-center gap-1 rounded-[8px] border border-[#e5e6ef] bg-white px-2.5 text-[11.5px] font-semibold text-[#66697c] transition-colors hover:bg-slate-50"
           >
             <Zap size={12} className="text-orange-500" /> Nhập điện nước
@@ -630,6 +635,13 @@ export default function AreaRoomCard({ area, onAddRoom, onSelectRoom }) {
       <AreaExpenseModal
         isOpen={isExpenseModalOpen}
         onClose={() => setIsExpenseModalOpen(false)}
+        area={area}
+      />
+
+      {/* Modal nhập điện nước theo khu */}
+      <AreaUtilityModal
+        isOpen={isUtilityModalOpen}
+        onClose={() => setIsUtilityModalOpen(false)}
         area={area}
       />
     </section>

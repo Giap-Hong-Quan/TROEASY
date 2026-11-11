@@ -17,9 +17,9 @@ const groups = [
     { label: "Hợp đồng", icon: FileText, path: "/contracts" },
   ]},
   { title: "VẬN HÀNH", items: [
-    { label: "Điện & nước", icon: Zap },
-    { label: "Hóa đơn & thu tiền", icon: CreditCard, badge: "3" },
-    { label: "Bảo trì", icon: Wrench },
+    { label: "Điện & nước", icon: Zap, path: "/utilities" },
+    { label: "Hóa đơn & thu tiền", icon: CreditCard, path: "/invoices" },
+    { label: "Bảo trì", icon: Wrench, path: "/maintenance" },
   ]},
   { title: "PHÂN TÍCH", items: [
     { label: "Lời / Lỗ", icon: ChartNoAxesCombined },

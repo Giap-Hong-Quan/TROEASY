@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { X, Plus, ChevronDown, Check } from "lucide-react";
 import toast from "react-hot-toast";
+import CustomSelect from "./CustomSelect.jsx";
 import { createRoom } from "../services/roomService.js";
 import { createRow } from "../services/rowService.js";
 
@@ -366,21 +367,16 @@ export default function CreateRoomModal({
             </div>
 
             <div>
-              <label htmlFor="room-status" className="mb-1.5 block text-xs font-bold text-[#3e435b]">
+              <label className="mb-1.5 block text-xs font-bold text-[#3e435b]">
                 Trạng thái
               </label>
-              <select
-                id="room-status"
+              <CustomSelect
+                size="lg"
                 value={status}
-                onChange={(event) => setStatus(event.target.value)}
-                className="h-10 w-full rounded-[10px] border border-[#e5e6ee] bg-white px-3 text-[13px] text-[#20243c] outline-none focus:border-[#6756df]"
-              >
-                {STATUS_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => setStatus(val)}
+                options={STATUS_OPTIONS}
+                className="w-full"
+              />
             </div>
           </div>
 

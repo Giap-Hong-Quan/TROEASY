@@ -57,6 +57,7 @@ export default function DashboardPage() {
               </button>
               <button
                 type="button"
+                onClick={() => navigate("/invoices")}
                 className="inline-flex h-9 items-center justify-center gap-1.5 rounded-[10px] bg-white/15 px-4 text-xs font-bold text-white backdrop-blur-sm transition-all hover:bg-white/25 active:scale-95"
               >
                 <Plus size={14} />

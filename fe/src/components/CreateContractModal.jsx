@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { X, FilePlus2 } from "lucide-react";
 import toast from "react-hot-toast";
+import CustomSelect from "./CustomSelect.jsx";
 import { createContract } from "../services/contractService.js";
 import { addMonths, getId, toInputDate } from "../utils/contractHelpers.js";
 
@@ -195,37 +196,38 @@ export default function CreateContractModal({
               <label className={labelClass}>
                 Khu vực <span className="text-red-500">*</span>
               </label>
-              <select value={areaId} onChange={(e) => handleAreaChange(e.target.value)} className={inputClass}>
-                <option value="">-- Chọn khu vực --</option>
-                {areas.map((a) => (
-                  <option key={getId(a)} value={getId(a)}>
-                    {a.name}
-                  </option>
-                ))}
-              </select>
+              <CustomSelect
+                size="lg"
+                value={areaId}
+                onChange={(val) => handleAreaChange(val)}
+                placeholder="-- Chọn khu vực --"
+                options={areas.map((a) => ({
+                  value: getId(a),
+                  label: a.name,
+                }))}
+                className="w-full"
+              />
             </div>
             <div>
               <label className={labelClass}>
                 Phòng <span className="text-red-500">*</span>
               </label>
-              <select
+              <CustomSelect
+                size="lg"
                 value={roomId}
-                onChange={(e) => handleRoomChange(e.target.value)}
+                onChange={(val) => handleRoomChange(val)}
                 disabled={!areaId}
-                className={inputClass}
-              >
-                <option value="">-- Chọn phòng --</option>
-                {areaRooms.map((r) => {
+                placeholder="-- Chọn phòng --"
+                options={areaRooms.map((r) => {
                   const busy = busyRoomIds.has(getId(r));
-                  return (
-                    <option key={getId(r)} value={getId(r)} disabled={busy}>
-                      {r.code}
-                      {r.row ? ` · ${r.row}` : ""}
-                      {busy ? " (đã có HĐ)" : ""}
-                    </option>
-                  );
+                  return {
+                    value: getId(r),
+                    label: `${r.code}${r.row ? ` · ${r.row}` : ""}${busy ? " (đã có HĐ)" : ""}`,
+                    disabled: busy,
+                  };
                 })}
-              </select>
+                className="w-full"
+              />
             </div>
           </div>
 
@@ -235,22 +237,22 @@ export default function CreateContractModal({
               <label className={labelClass}>
                 Người đại diện ký <span className="text-red-500">*</span>
               </label>
-              <select
+              <CustomSelect
+                size="lg"
                 value={tenantId}
-                onChange={(e) => setTenantId(e.target.value)}
+                onChange={(val) => setTenantId(val)}
                 disabled={!roomId}
-                className={inputClass}
-              >
-                <option value="">
-                  {roomId && roomTenants.length === 0 ? "Phòng chưa có người thuê" : "-- Chọn người thuê --"}
-                </option>
-                {roomTenants.map((t) => (
-                  <option key={getId(t)} value={getId(t)}>
-                    {t.fullName}
-                    {t.isRepresentative ? " (Đại diện)" : ""}
-                  </option>
-                ))}
-              </select>
+                placeholder={
+                  roomId && roomTenants.length === 0
+                    ? "Phòng chưa có người thuê"
+                    : "-- Chọn người thuê --"
+                }
+                options={roomTenants.map((t) => ({
+                  value: getId(t),
+                  label: `${t.fullName}${t.isRepresentative ? " (Đại diện)" : ""}`,
+                }))}
+                className="w-full"
+              />
               {roomId && roomTenants.length === 0 && (
                 <p className="mt-1 text-[11px] text-[#d4515e]">
                   Thêm người thuê vào phòng ở Sơ đồ phòng trước khi lập hợp đồng.

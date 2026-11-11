@@ -9,6 +9,9 @@ const PAGE_BY_PATH = {
   "/rooms": "Sơ đồ phòng",
   "/tenants": "Khách thuê",
   "/contracts": "Hợp đồng",
+  "/utilities": "Điện & nước",
+  "/invoices": "Hóa đơn & thu tiền",
+  "/maintenance": "Bảo trì",
 };
 
 // Layout chung cho các trang cần đăng nhập.

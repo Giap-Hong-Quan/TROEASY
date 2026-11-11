@@ -23,6 +23,7 @@ import {
   Plus,
 } from "lucide-react";
 import CreateTenantModal from "./CreateTenantModal.jsx";
+import CustomSelect from "./CustomSelect.jsx";
 import TenantDetailModal from "./TenantDetailModal.jsx";
 import { deleteRoom, getRoomById, updateRoom } from "../services/roomService.js";
 import { getTenants } from "../services/tenantService.js";
@@ -463,18 +464,19 @@ export default function RoomDetailModal({
                       <label className="mb-1 block text-[11px] font-bold text-[#4b5168]">
                         Dãy phòng
                       </label>
-                      <select
+                      <CustomSelect
+                        size="sm"
                         value={editRowId}
-                        onChange={(e) => setEditRowId(e.target.value)}
-                        className="h-8 w-full cursor-pointer appearance-none rounded-xl border border-[#e5e6ee] bg-white px-3 text-xs font-semibold text-[#20243c] outline-none transition focus:border-[#6756df]"
-                      >
-                        <option value="">Chưa phân dãy</option>
-                        {areaRows.map((r) => (
-                          <option key={r.id || r._id} value={r.id || r._id}>
-                            {r.name}
-                          </option>
-                        ))}
-                      </select>
+                        onChange={(val) => setEditRowId(val)}
+                        options={[
+                          { value: "", label: "Chưa phân dãy" },
+                          ...areaRows.map((r) => ({
+                            value: r.id || r._id,
+                            label: r.name,
+                          })),
+                        ]}
+                        className="w-full"
+                      />
                     </div>
 
                     {/* Giá thuê */}
@@ -496,17 +498,19 @@ export default function RoomDetailModal({
                       <label className="mb-1 block text-[11px] font-bold text-[#4b5168]">
                         Trạng thái phòng
                       </label>
-                      <select
+                      <CustomSelect
+                        size="sm"
                         value={editStatus}
-                        onChange={(e) => setEditStatus(e.target.value)}
-                        className="h-8 w-full cursor-pointer appearance-none rounded-xl border border-[#e5e6ee] bg-white px-3 text-xs font-semibold text-[#20243c] outline-none transition focus:border-[#6756df]"
-                      >
-                        <option value="vacant">Trống</option>
-                        <option value="renting">Đang thuê</option>
-                        <option value="deposit">Đã cọc</option>
-                        <option value="repair">Đang sửa</option>
-                        <option value="stop">Tạm ngưng</option>
-                      </select>
+                        onChange={(val) => setEditStatus(val)}
+                        options={[
+                          { value: "vacant", label: "Trống" },
+                          { value: "renting", label: "Đang thuê" },
+                          { value: "deposit", label: "Đã cọc" },
+                          { value: "repair", label: "Đang sửa" },
+                          { value: "stop", label: "Tạm ngưng" },
+                        ]}
+                        className="w-full"
+                      />
                     </div>
 
                     {/* Tiện ích */}
