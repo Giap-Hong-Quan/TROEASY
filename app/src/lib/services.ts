@@ -30,6 +30,14 @@ export const getRoomOccupancyStats = async (params?: Record<string, any>) =>
 export const getTenants = async (params?: Record<string, any>) => (await api.get('/tenants', params))?.tenants ?? [];
 export const createTenant = async (body: any) => (await api.post('/tenants', body))?.tenant;
 export const updateTenant = async (id: string, body: any) => (await api.put(`/tenants/${id}`, body))?.tenant;
+export const updateTenantWithMeta = async (id: string, body: any) => {
+  const data = await api.put(`/tenants/${id}`, body);
+  return {
+    tenant: data?.tenant,
+    needsNewRepresentative: Boolean(data?.needsNewRepresentative),
+    remainingActiveTenants: (data?.remainingActiveTenants ?? []) as any[],
+  };
+};
 export const deleteTenant = async (id: string) => (await api.delete(`/tenants/${id}`))?.tenant;
 
 /* ---------- Contracts ---------- */

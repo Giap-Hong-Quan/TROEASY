@@ -36,8 +36,16 @@ export const createTenantController = async (req, res, next) => {
 
 export const updateTenantController = async (req, res, next) => {
     try {
-        const tenant = await updateTenantService(req.params.id, req.body);
-        return success(res, { tenant }, "Cập nhật thông tin khách thuê thành công.", 200);
+        const { tenant, needsNewRepresentative, remainingActiveTenants } = await updateTenantService(
+            req.params.id,
+            req.body
+        );
+        return success(
+            res,
+            { tenant, needsNewRepresentative, remainingActiveTenants },
+            "Cập nhật thông tin khách thuê thành công.",
+            200
+        );
     } catch (error) {
         return next(error);
     }

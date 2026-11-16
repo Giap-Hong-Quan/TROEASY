@@ -1,9 +1,10 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useState } from 'react';
 import { Alert, Pressable, Text, View } from 'react-native';
 
-import { TenantDetailSheet, TenantFormSheet } from '@/components/tenant-sheets';
+import { SelectRepresentativeSheet, TenantDetailSheet, TenantFormSheet } from '@/components/tenant-sheets';
 import { Badge, Button, Empty, Field, IconButton, Loading, Row, Select, Sheet, confirm } from '@/components/ui';
 import { errorMessage } from '@/lib/api';
 import { DELETE_PASSWORD } from '@/lib/config';
@@ -161,6 +162,7 @@ export function RoomDetailSheet({ room, area, onClose }: { room: any | null; are
   const [editing, setEditing] = useState(false);
   const [addTenant, setAddTenant] = useState(false);
   const [tenantDetail, setTenantDetail] = useState<any>(null);
+  const [pickRepOpen, setPickRepOpen] = useState(false);
 
   const [code, setCode] = useState('');
   const [rowId, setRowId] = useState('');
@@ -234,13 +236,16 @@ export function RoomDetailSheet({ room, area, onClose }: { room: any | null; are
 
   if (!room) return null;
   const st = ROOM_STATUS[room.status] ?? ROOM_STATUS.vacant;
-  const list = tenants.data ?? [];
+  const list = (tenants.data ?? [])
+    .filter((t: any) => t.status !== 'checkout')
+    .sort((a: any, b: any) => Number(b.isRepresentative === true) - Number(a.isRepresentative === true));
+  const hasRepresentative = list.some((t: any) => t.isRepresentative === true);
   const assetPool = Array.from(new Set([...SUGGESTED_ASSETS, ...assets]));
 
   return (
     <>
       <Sheet
-        visible={!addTenant && !tenantDetail}
+        visible={!addTenant && !tenantDetail && !pickRepOpen}
         title={editing ? `Sửa phòng ${room.code}` : `Phòng ${room.code}`}
         onClose={onClose}
         footer={
@@ -317,6 +322,25 @@ export function RoomDetailSheet({ room, area, onClose }: { room: any | null; are
                 <Text style={{ fontSize: 15, fontWeight: '800', color: colors.text }}>Khách thuê ({list.length})</Text>
                 <Button label="Thêm khách" icon="person-add-outline" variant="soft" small onPress={() => setAddTenant(true)} />
               </View>
+              {!tenants.isLoading && list.length > 0 && !hasRepresentative && (
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 10,
+                    backgroundColor: colors.warnBg,
+                    borderRadius: 12,
+                    padding: 10,
+                    borderWidth: 1,
+                    borderColor: '#fde68a',
+                  }}>
+                  <Ionicons name="alert-circle" size={18} color={colors.warn} />
+                  <Text style={{ flex: 1, fontSize: 12.5, fontWeight: '600', color: colors.text }}>
+                    Phòng chưa có người đại diện
+                  </Text>
+                  <Button label="Chọn đại diện" variant="soft" small onPress={() => setPickRepOpen(true)} />
+                </View>
+              )}
               {tenants.isLoading ? (
                 <Loading />
               ) : list.length === 0 ? (
@@ -334,7 +358,7 @@ export function RoomDetailSheet({ room, area, onClose }: { room: any | null; are
                       <Text style={{ fontSize: 14, fontWeight: '800', color: colors.text }}>{t.fullName}</Text>
                       <Text style={{ fontSize: 12, color: colors.muted }}>{t.phone}</Text>
                     </View>
-                    {t.isRepresentative !== false && <Ionicons name="ribbon" size={16} color={colors.primary} />}
+                    {t.isRepresentative === true && <MaterialCommunityIcons name="crown" size={16} color="#b9822f" />}
                     <Ionicons name="chevron-forward" size={16} color="#c4c7d6" />
                   </Pressable>
                 ))
@@ -346,6 +370,7 @@ export function RoomDetailSheet({ room, area, onClose }: { room: any | null; are
 
       <TenantFormSheet visible={addTenant} onClose={() => setAddTenant(false)} defaultAreaId={refId(room.areaId)} defaultRoomId={roomId} />
       <TenantDetailSheet tenant={tenantDetail} onClose={() => setTenantDetail(null)} />
+      <SelectRepresentativeSheet visible={pickRepOpen} candidates={list} roomCode={room.code} onClose={() => setPickRepOpen(false)} />
     </>
   );
 }

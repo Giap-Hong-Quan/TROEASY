@@ -83,7 +83,7 @@ export default function ContractsScreen() {
         subtitle={`${stats.activeCount} đang hiệu lực · ${allContracts.length} hợp đồng`}
         refreshing={contractsQuery.isRefetching}
         onRefresh={() => contractsQuery.refetch()}
-        bottomPad={96}
+        bottomPad={104}
         header={
           <View style={{ gap: 10, paddingBottom: 4 }}>
             <SearchBox value={search} onChangeText={setSearch} placeholder="Tìm mã HĐ, phòng, khách thuê..." />
@@ -97,7 +97,7 @@ export default function ContractsScreen() {
             label="Sắp hết hạn"
             value={`${stats.expiringCount}`}
             tone={stats.expiringCount > 0 ? colors.warn : colors.muted}
-            hint="<= 30 ngày"
+            hint="Trong 30 ngày"
           />
         </View>
         <View style={{ flexDirection: 'row', gap: 10 }}>
@@ -131,8 +131,8 @@ export default function ContractsScreen() {
                   </Text>
                   <Text style={{ fontSize: 11.5, color: colors.muted }}>{c.contractCode}</Text>
                 </View>
-                <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}>
-                  {isSoon && <Badge label={`Còn ${left}d`} fg={colors.warn} bg={colors.warnBg} />}
+                <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                  {isSoon && <Badge label={`Còn ${left} ngày`} fg={colors.warn} bg={colors.warnBg} />}
                   <Badge label={st.label} fg={st.fg} bg={st.bg} />
                 </View>
               </View>
@@ -154,11 +154,11 @@ export default function ContractsScreen() {
                   borderTopWidth: 1,
                   borderTopColor: colors.border,
                 }}>
-                <Text style={{ fontSize: 12, color: colors.muted }}>
+                <Text style={{ fontSize: 12.5, color: colors.muted }}>
                   {formatDate(c.startDate)} → {formatDate(c.endDate)}
                 </Text>
                 <Text style={{ fontSize: 14.5, fontWeight: '900', color: colors.primary }}>
-                  {money(c.rentalPrice)}/th
+                  {money(c.rentalPrice)}/tháng
                 </Text>
               </View>
             </Card>

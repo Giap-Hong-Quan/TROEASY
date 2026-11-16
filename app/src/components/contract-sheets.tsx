@@ -254,24 +254,32 @@ export function CreateContractSheet({
       <View style={{ flexDirection: 'row', gap: 10 }}>
         <View style={{ flex: 1 }}>
           <Field
-            label="Ngày bắt đầu *"
+            label="Từ ngày *"
             value={startDate}
             onChangeText={handleStartDateChange}
             placeholder="YYYY-MM-DD"
+            hint="Năm-Tháng-Ngày"
           />
         </View>
         <View style={{ flex: 1 }}>
-          <Field label="Ngày kết thúc *" value={endDate} onChangeText={setEndDate} placeholder="YYYY-MM-DD" />
+          <Field
+            label="Đến ngày *"
+            value={endDate}
+            onChangeText={setEndDate}
+            placeholder="YYYY-MM-DD"
+            hint="Tự cộng theo thời hạn"
+          />
         </View>
       </View>
 
       <View style={{ flexDirection: 'row', gap: 10 }}>
         <View style={{ flex: 1 }}>
           <Field
-            label="Giá thuê (đ/tháng) *"
+            label="Giá thuê (đ) *"
             value={rentalPrice}
             onChangeText={setRentalPrice}
             keyboardType="numeric"
+            hint="VNĐ / tháng"
           />
         </View>
         <View style={{ flex: 1 }}>
@@ -281,10 +289,10 @@ export function CreateContractSheet({
 
       <View style={{ flexDirection: 'row', gap: 10 }}>
         <View style={{ flex: 1 }}>
-          <Field label="Ngày thu tiền (1-31)" value={billingDay} onChangeText={setBillingDay} keyboardType="numeric" />
+          <Field label="Ngày thu tiền" value={billingDay} onChangeText={setBillingDay} keyboardType="numeric" hint="Từ ngày 1–31" />
         </View>
         <View style={{ flex: 1 }}>
-          <Field label="Chu kỳ (tháng)" value={paymentCycle} onChangeText={setPaymentCycle} keyboardType="numeric" />
+          <Field label="Chu kỳ đóng" value={paymentCycle} onChangeText={setPaymentCycle} keyboardType="numeric" hint="Số tháng / lần" />
         </View>
       </View>
 

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Modal, Spin } from "antd";
 import {
   X,
@@ -7,9 +7,11 @@ import {
   Copy,
   Check,
   Crown,
+  LogOut,
 } from "lucide-react";
 import toast from "react-hot-toast";
-import { getTenantById } from "../services/tenantService.js";
+import SelectRepresentativeModal from "./SelectRepresentativeModal.jsx";
+import { getTenantById, updateTenantWithMeta } from "../services/tenantService.js";
 
 const STATUS_CONFIG = {
   active: { label: "Đang thuê", badgeClass: "bg-[#e3f8f0] text-[#159878] border-[#a8edd8]", dotClass: "bg-[#159878]" },
@@ -33,8 +35,10 @@ function formatDate(dateStr) {
 }
 
 export default function TenantDetailModal({ isOpen, onClose, tenant, zIndex = 1250 }) {
+  const queryClient = useQueryClient();
   const tenantId = tenant?._id || tenant?.id;
   const [copied, setCopied] = useState(false);
+  const [repPicker, setRepPicker] = useState(null);
 
   const { data: fetchedTenant, isFetching } = useQuery({
     queryKey: ["tenant", tenantId],
@@ -44,6 +48,44 @@ export default function TenantDetailModal({ isOpen, onClose, tenant, zIndex = 12
   });
 
   const currentTenant = fetchedTenant || tenant;
+
+  const checkoutMutation = useMutation({
+    mutationFn: () =>
+      updateTenantWithMeta(tenantId, {
+        status: "checkout",
+        isRepresentative: false,
+      }),
+    onSuccess: (res) => {
+      queryClient.invalidateQueries({ queryKey: ["tenants"] });
+      queryClient.invalidateQueries({ queryKey: ["tenant", tenantId] });
+      queryClient.invalidateQueries({ queryKey: ["rooms"] });
+      toast.success(`Đã chuyển "${currentTenant?.fullName}" sang Đã trả phòng!`);
+      if (res?.needsNewRepresentative && res.remainingActiveTenants?.length > 0) {
+        setRepPicker({
+          candidates: res.remainingActiveTenants,
+          roomCode: currentTenant?.roomId?.code || currentTenant?.roomCode || "",
+        });
+        return;
+      }
+      onClose?.();
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || "Không thể cập nhật trạng thái trả phòng.");
+    },
+  });
+
+  const setRepMutation = useMutation({
+    mutationFn: () => updateTenantWithMeta(tenantId, { isRepresentative: true }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tenants"] });
+      queryClient.invalidateQueries({ queryKey: ["tenant", tenantId] });
+      queryClient.invalidateQueries({ queryKey: ["rooms"] });
+      toast.success(`Đã đặt "${currentTenant?.fullName}" làm người đại diện!`);
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || "Không thể cập nhật người đại diện.");
+    },
+  });
 
   if (!currentTenant && !isOpen) return null;
 
@@ -231,28 +273,79 @@ export default function TenantDetailModal({ isOpen, onClose, tenant, zIndex = 12
               </div>
 
               {/* Modal Footer */}
-              <div className="flex items-center justify-end gap-2 border-t border-[#eeeff6] pt-4">
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="inline-flex h-8 items-center justify-center rounded-[8px] border border-[#e5e6ee] bg-white px-3 text-[11.5px] font-semibold text-[#54596e] transition-colors hover:bg-slate-50"
-                >
-                  Đóng
-                </button>
-                {currentTenant.phone && (
-                  <a
-                    href={`tel:${currentTenant.phone}`}
-                    className="inline-flex h-8 items-center justify-center gap-1 rounded-[8px] bg-[#6756df] px-3 text-[11.5px] font-semibold text-white transition-colors hover:bg-[#5b4bc7]"
+              <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[#eeeff6] pt-4">
+                <div className="flex items-center gap-2">
+                  {currentTenant.status !== "checkout" && (
+                    <button
+                      type="button"
+                      disabled={checkoutMutation.isPending}
+                      onClick={() => {
+                        Modal.confirm({
+                          title: "Xác nhận trả phòng",
+                          content: `Chuyển "${currentTenant.fullName}" sang trạng thái Đã trả phòng?${
+                            currentTenant.isRepresentative
+                              ? " Sau khi trả phòng bạn sẽ chọn người đại diện mới cho phòng."
+                              : ""
+                          }`,
+                          okText: "Trả phòng",
+                          cancelText: "Hủy",
+                          okButtonProps: { danger: true },
+                          zIndex: zIndex + 50,
+                          onOk: () => checkoutMutation.mutateAsync(),
+                        });
+                      }}
+                      className="inline-flex h-8 items-center justify-center gap-1 rounded-[8px] border border-[#ffd0d6] bg-[#fff5f6] px-2.5 text-[11.5px] font-semibold text-[#dd5262] transition-colors hover:bg-[#ffebee] disabled:opacity-60"
+                    >
+                      <LogOut size={13} />
+                      Trả phòng
+                    </button>
+                  )}
+                  {currentTenant.status !== "checkout" && !currentTenant.isRepresentative && (
+                    <button
+                      type="button"
+                      disabled={setRepMutation.isPending}
+                      onClick={() => setRepMutation.mutate()}
+                      className="inline-flex h-8 items-center justify-center gap-1 rounded-[8px] border border-[#d9d4ff] bg-[#f5f3ff] px-2.5 text-[11.5px] font-semibold text-[#6756df] transition-colors hover:bg-[#ece8ff] disabled:opacity-60"
+                    >
+                      <Crown size={13} />
+                      {setRepMutation.isPending ? "Đang lưu..." : "Đặt làm đại diện"}
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="inline-flex h-8 items-center justify-center rounded-[8px] border border-[#e5e6ee] bg-white px-3 text-[11.5px] font-semibold text-[#54596e] transition-colors hover:bg-slate-50"
                   >
-                    <Phone size={13} />
-                    Gọi điện
-                  </a>
-                )}
+                    Đóng
+                  </button>
+                  {currentTenant.phone && (
+                    <a
+                      href={`tel:${currentTenant.phone}`}
+                      className="inline-flex h-8 items-center justify-center gap-1 rounded-[8px] bg-[#6756df] px-3 text-[11.5px] font-semibold text-white transition-colors hover:bg-[#5b4bc7]"
+                    >
+                      <Phone size={13} />
+                      Gọi điện
+                    </a>
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </Spin>
       )}
+      <SelectRepresentativeModal
+        isOpen={Boolean(repPicker)}
+        onClose={() => {
+          setRepPicker(null);
+          onClose?.();
+        }}
+        candidates={repPicker?.candidates || []}
+        roomCode={repPicker?.roomCode || ""}
+        zIndex={zIndex + 100}
+      />
     </Modal>
   );
 }

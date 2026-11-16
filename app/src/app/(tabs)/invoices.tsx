@@ -80,19 +80,17 @@ export default function InvoicesScreen() {
         subtitle={`${allInvoices.length} hóa đơn · T${month}/${year}`}
         refreshing={invoicesQuery.isRefetching}
         onRefresh={() => invoicesQuery.refetch()}
-        bottomPad={96}
+        bottomPad={104}
         header={
           <View style={{ gap: 10, paddingBottom: 4 }}>
-            <View style={{ paddingHorizontal: 16 }}>
-              <PeriodBar
-                month={month}
-                year={year}
-                onChange={(m, y) => {
-                  setMonth(m);
-                  setYear(y);
-                }}
-              />
-            </View>
+            <PeriodBar
+              month={month}
+              year={year}
+              onChange={(m, y) => {
+                setMonth(m);
+                setYear(y);
+              }}
+            />
             <SearchBox value={search} onChangeText={setSearch} placeholder="Tìm phòng, mã hóa đơn, khách..." />
             <Chips value={status} options={statusOptions} onChange={setStatus} />
             {(areas.data ?? []).length > 1 && <Chips value={areaId} options={areaOptions} onChange={setAreaId} />}
@@ -152,10 +150,26 @@ export default function InvoicesScreen() {
                 </Text>
               </View>
 
-              <Text style={{ fontSize: 12, color: colors.muted }}>
-                Phòng {moneyShort(inv.roomPrice ?? 0)} · Điện/nước {moneyShort(inv.utilityAmount ?? 0)} · Dịch vụ{' '}
-                {moneyShort(inv.serviceAmount ?? 0)}
-              </Text>
+              <View style={{ flexDirection: 'row', gap: 8, backgroundColor: '#f7f8fc', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 8 }}>
+                <View style={{ flex: 1, gap: 2 }}>
+                  <Text style={{ fontSize: 11, color: colors.muted, fontWeight: '600' }}>Tiền phòng</Text>
+                  <Text style={{ fontSize: 12.5, color: colors.textSoft, fontWeight: '700' }} numberOfLines={1}>
+                    {moneyShort(inv.roomPrice ?? 0)}
+                  </Text>
+                </View>
+                <View style={{ flex: 1, gap: 2, alignItems: 'center' }}>
+                  <Text style={{ fontSize: 11, color: colors.muted, fontWeight: '600' }}>Điện nước</Text>
+                  <Text style={{ fontSize: 12.5, color: colors.textSoft, fontWeight: '700' }} numberOfLines={1}>
+                    {moneyShort(inv.utilityAmount ?? 0)}
+                  </Text>
+                </View>
+                <View style={{ flex: 1, gap: 2, alignItems: 'flex-end' }}>
+                  <Text style={{ fontSize: 11, color: colors.muted, fontWeight: '600' }}>Dịch vụ</Text>
+                  <Text style={{ fontSize: 12.5, color: colors.textSoft, fontWeight: '700' }} numberOfLines={1}>
+                    {moneyShort(inv.serviceAmount ?? 0)}
+                  </Text>
+                </View>
+              </View>
 
               <View
                 style={{

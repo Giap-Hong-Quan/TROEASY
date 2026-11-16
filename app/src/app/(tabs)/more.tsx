@@ -58,7 +58,7 @@ export default function MoreScreen() {
   const displayName = user?.fullName || user?.username || 'Quản lý TrọEasy';
 
   return (
-    <Screen title="Thêm" subtitle="Nghiệp vụ & tài khoản" bottomPad={90}>
+    <Screen title="Thêm" subtitle="Nghiệp vụ & tài khoản" bottomPad={32}>
       <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
         <View
           style={{
@@ -130,11 +130,11 @@ export default function MoreScreen() {
           <Ionicons name="server-outline" size={16} color={colors.primary} />
           <Text style={{ fontSize: 13, fontWeight: '800', color: colors.text }}>Máy chủ API</Text>
         </View>
-        <Text style={{ fontSize: 12, color: colors.textSoft }} selectable>
+        <Text style={{ fontSize: 13, fontWeight: '700', color: colors.textSoft }} selectable>
           {getApiUrl()}
         </Text>
-        <Text style={{ fontSize: 11.5, color: colors.muted }}>
-          Khi chạy bằng Expo Go trên iPhone thật, đảm bảo máy tính và điện thoại dùng chung Wi-Fi và backend chạy ở cổng 9000.
+        <Text style={{ fontSize: 12, color: colors.muted, lineHeight: 17 }}>
+          Khi chạy bằng Expo Go trên điện thoại thật, đảm bảo máy tính và điện thoại dùng chung Wi-Fi và backend đang mở ở cổng 9000.
         </Text>
       </Card>
 

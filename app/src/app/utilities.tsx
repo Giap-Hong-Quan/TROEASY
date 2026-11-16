@@ -103,19 +103,17 @@ export default function UtilitiesScreen() {
         right={<Button label="Chốt số" icon="create-outline" small onPress={() => openInput('')} />}
         refreshing={sheetQuery.isRefetching}
         onRefresh={() => sheetQuery.refetch()}
-        bottomPad={96}
+        bottomPad={104}
         header={
           <View style={{ gap: 10, paddingBottom: 4 }}>
-            <View style={{ paddingHorizontal: 16 }}>
-              <PeriodBar
-                month={month}
-                year={year}
-                onChange={(m, y) => {
-                  setMonth(m);
-                  setYear(y);
-                }}
-              />
-            </View>
+            <PeriodBar
+              month={month}
+              year={year}
+              onChange={(m, y) => {
+                setMonth(m);
+                setYear(y);
+              }}
+            />
             <SearchBox value={search} onChangeText={setSearch} placeholder="Tìm phòng, khu, khách thuê..." />
             <Chips
               value={filter}
@@ -238,8 +236,8 @@ export default function UtilitiesScreen() {
                   </View>
                 </>
               ) : (
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 4 }}>
-                  <Text style={{ fontSize: 12, color: colors.muted }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10, paddingTop: 4 }}>
+                  <Text style={{ flex: 1, fontSize: 12.5, color: colors.muted }} numberOfLines={1}>
                     Số kỳ trước: Điện {e.oldIndex ?? 0} · Nước {w.oldIndex ?? 0}
                   </Text>
                   <Button label="Nhập số" small variant="soft" onPress={() => openInput(String(item.roomId))} />

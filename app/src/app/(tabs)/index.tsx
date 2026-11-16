@@ -33,22 +33,23 @@ export default function DashboardScreen() {
   const firstLoad = stats.isLoading && invoices.isLoading;
   const error = stats.error || invoices.error;
 
-  const actions: { label: string; icon: keyof typeof Ionicons.glyphMap; go: string }[] = [
-    { label: 'Sơ đồ phòng', icon: 'home', go: '/rooms' },
-    { label: 'Tạo hóa đơn', icon: 'card', go: '/invoices' },
-    { label: 'Điện & nước', icon: 'flash', go: '/utilities' },
-    { label: 'Bảo trì', icon: 'construct', go: '/maintenance' },
+  const actions: { label: string; desc: string; icon: keyof typeof Ionicons.glyphMap; go: string }[] = [
+    { label: 'Sơ đồ phòng', desc: 'Khu, dãy & phòng', icon: 'home', go: '/rooms' },
+    { label: 'Thu hóa đơn', desc: 'Công nợ & thanh toán', icon: 'card', go: '/invoices' },
+    { label: 'Điện & nước', desc: 'Chốt chỉ số kỳ mới', icon: 'flash', go: '/utilities' },
+    { label: 'Bảo trì', desc: 'Tiếp nhận sự cố', icon: 'construct', go: '/maintenance' },
   ];
 
   return (
     <Screen
       title={`Xin chào${user?.fullName ? ', ' + user.fullName.split(' ').slice(-1)[0] : ''} 👋`}
       subtitle={`Tháng ${month}/${year}`}
+      bottomPad={32}
       refreshing={refreshing}
       onRefresh={refetchAll}>
       <View style={{ backgroundColor: colors.primary, borderRadius: 24, padding: 18, overflow: 'hidden' }}>
         <View style={{ position: 'absolute', right: -40, top: -50, width: 160, height: 160, borderRadius: 80, backgroundColor: 'rgba(255,255,255,0.1)' }} />
-        <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 11, fontWeight: '800', letterSpacing: 1 }}>KHÔNG GIAN QUẢN LÝ CỦA BẠN</Text>
+        <Text style={{ color: 'rgba(255,255,255,0.82)', fontSize: 11.5, fontWeight: '800', letterSpacing: 1 }}>KHÔNG GIAN QUẢN LÝ CỦA BẠN</Text>
         <Text style={{ color: '#fff', fontSize: 20, fontWeight: '900', marginTop: 8, lineHeight: 26 }}>
           Vận hành phòng trọ, đơn giản hơn mỗi ngày.
         </Text>
@@ -76,7 +77,7 @@ export default function DashboardScreen() {
             <Stat label="Tổng hóa đơn" value={moneyShort(inv.totalAmount)} tone={colors.text} hint={`${moneyShort(inv.paidAmount)} đã thu`} />
           </View>
           <View style={{ flexDirection: 'row', gap: 12 }}>
-            <Stat label="Công nợ phải thu" value={moneyShort(inv.remainingAmount)} tone={colors.danger} hint={`${inv.unpaidCount ?? 0} chưa thu · ${inv.partialCount ?? 0} một phần`} />
+            <Stat label="Công nợ phải thu" value={moneyShort(inv.remainingAmount)} tone={colors.danger} hint={`${inv.unpaidCount ?? 0} chưa đóng · ${inv.partialCount ?? 0} đóng 1 phần`} />
             <Stat label="Bảo trì chờ xử lý" value={String((m.openCount ?? 0) + (m.inProgressCount ?? 0))} tone={colors.warn} hint={`${m.resolvedCount ?? 0} đã xong`} />
           </View>
 
@@ -102,20 +103,37 @@ export default function DashboardScreen() {
       )}
 
       <SectionTitle>Truy cập nhanh</SectionTitle>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
-        {actions.map((a) => (
-          <Pressable
-            key={a.label}
-            onPress={() => router.push(a.go as any)}
-            style={({ pressed }) => [
-              { width: '47.5%', backgroundColor: '#fff', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: colors.border, gap: 10 },
-              pressed && { opacity: 0.8 },
-            ]}>
-            <View style={{ width: 38, height: 38, borderRadius: 12, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' }}>
-              <Ionicons name={a.icon} size={19} color={colors.primary} />
-            </View>
-            <Text style={{ fontSize: 14, fontWeight: '800', color: colors.text }}>{a.label}</Text>
-          </Pressable>
+      <View style={{ gap: 12 }}>
+        {[0, 2].map((start) => (
+          <View key={start} style={{ flexDirection: 'row', gap: 12 }}>
+            {actions.slice(start, start + 2).map((a) => (
+              <Pressable
+                key={a.label}
+                onPress={() => router.push(a.go as any)}
+                style={({ pressed }) => [
+                  {
+                    flex: 1,
+                    backgroundColor: '#fff',
+                    borderRadius: 16,
+                    padding: 14,
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                    gap: 8,
+                  },
+                  pressed && { opacity: 0.8 },
+                ]}>
+                <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' }}>
+                  <Ionicons name={a.icon} size={20} color={colors.primary} />
+                </View>
+                <View style={{ gap: 2 }}>
+                  <Text style={{ fontSize: 14.5, fontWeight: '800', color: colors.text }}>{a.label}</Text>
+                  <Text style={{ fontSize: 12, color: colors.muted }} numberOfLines={1}>
+                    {a.desc}
+                  </Text>
+                </View>
+              </Pressable>
+            ))}
+          </View>
         ))}
       </View>
     </Screen>

@@ -99,7 +99,7 @@ export default function MaintenanceScreen() {
         subtitle={`${counts.open + counts.inProgress} đang xử lý · ${counts.total} phiếu`}
         refreshing={maintQuery.isRefetching}
         onRefresh={() => maintQuery.refetch()}
-        bottomPad={96}
+        bottomPad={104}
         header={
           <View style={{ gap: 10, paddingBottom: 4 }}>
             <SearchBox value={search} onChangeText={setSearch} placeholder="Tìm sự cố, mô tả, phòng..." />
@@ -110,7 +110,10 @@ export default function MaintenanceScreen() {
         <View style={{ flexDirection: 'row', gap: 10 }}>
           <Stat label="Chờ xử lý" value={`${counts.open}`} tone={counts.open > 0 ? colors.danger : colors.muted} />
           <Stat label="Đang sửa" value={`${counts.inProgress}`} tone={counts.inProgress > 0 ? colors.warn : colors.muted} />
+        </View>
+        <View style={{ flexDirection: 'row', gap: 10 }}>
           <Stat label="Đã xong" value={`${counts.resolved}`} tone={colors.success} />
+          <Stat label="Tổng phiếu" value={`${counts.total}`} tone={colors.primary} />
         </View>
 
         {maintQuery.isLoading && <Loading />}
@@ -163,11 +166,13 @@ export default function MaintenanceScreen() {
                       <Pressable
                         key={key}
                         disabled={active || changeStatus.isPending}
+                        hitSlop={4}
                         onPress={() => changeStatus.mutate({ id, nextStatus: key })}
                         style={({ pressed }) => [
                           {
-                            paddingHorizontal: 10,
-                            paddingVertical: 6,
+                            paddingHorizontal: 11,
+                            minHeight: 34,
+                            justifyContent: 'center',
                             borderRadius: 99,
                             borderWidth: 1,
                             borderColor: active ? meta.fg : colors.border,
@@ -177,7 +182,7 @@ export default function MaintenanceScreen() {
                         ]}>
                         <Text
                           style={{
-                            fontSize: 11.5,
+                            fontSize: 12,
                             fontWeight: '700',
                             color: active ? meta.fg : colors.textSoft,
                           }}>

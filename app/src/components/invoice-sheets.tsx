@@ -123,18 +123,32 @@ export function InvoicePaymentSheet({ invoice, onClose }: { invoice: any | null;
       </View>
 
       <View style={{ gap: 8 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
           <Text style={{ fontSize: 12.5, fontWeight: '700', color: colors.textSoft }}>Số tiền khách thanh toán *</Text>
           <View style={{ flexDirection: 'row', gap: 6 }}>
             <Pressable
+              hitSlop={6}
               onPress={() => setPaidAmount(String(invoice.totalAmount ?? 0))}
-              style={{ backgroundColor: colors.primarySoft, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8 }}>
-              <Text style={{ fontSize: 11.5, fontWeight: '800', color: colors.primary }}>Thu đủ 100%</Text>
+              style={{
+                backgroundColor: colors.primarySoft,
+                paddingHorizontal: 10,
+                minHeight: 30,
+                justifyContent: 'center',
+                borderRadius: 8,
+              }}>
+              <Text style={{ fontSize: 12, fontWeight: '800', color: colors.primary }}>Thu đủ 100%</Text>
             </Pressable>
             <Pressable
+              hitSlop={6}
               onPress={() => setPaidAmount('0')}
-              style={{ backgroundColor: colors.grayBg, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8 }}>
-              <Text style={{ fontSize: 11.5, fontWeight: '700', color: colors.textSoft }}>Chưa thu (0 đ)</Text>
+              style={{
+                backgroundColor: colors.grayBg,
+                paddingHorizontal: 10,
+                minHeight: 30,
+                justifyContent: 'center',
+                borderRadius: 8,
+              }}>
+              <Text style={{ fontSize: 12, fontWeight: '700', color: colors.textSoft }}>Chưa thu (0 đ)</Text>
             </Pressable>
           </View>
         </View>
@@ -196,7 +210,7 @@ type DraftFees = {
 function SmallMoneyInput({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
     <View style={{ flex: 1, gap: 4 }}>
-      <Text style={{ fontSize: 11, fontWeight: '700', color: colors.muted }}>{label}</Text>
+      <Text style={{ fontSize: 11.5, fontWeight: '700', color: colors.textSoft }}>{label}</Text>
       <TextInput
         value={value}
         onChangeText={(v) => {
@@ -204,13 +218,13 @@ function SmallMoneyInput({ label, value, onChange }: { label: string; value: str
         }}
         keyboardType="number-pad"
         style={{
-          height: 38,
+          height: 42,
           borderRadius: 10,
           borderWidth: 1,
           borderColor: '#dfe1eb',
           backgroundColor: '#fafafe',
           paddingHorizontal: 10,
-          fontSize: 13,
+          fontSize: 13.5,
           fontWeight: '700',
           color: colors.text,
         }}
@@ -375,16 +389,15 @@ export function CreateInvoicesSheet({
           <Button label={`Lập ${summary.count} hóa đơn`} icon="receipt-outline" onPress={submit} loading={generate.isPending} />
         </View>
       }>
-      <View style={{ marginHorizontal: -16 }}>
-        <PeriodBar
-          month={month}
-          year={year}
-          onChange={(m, y) => {
-            setMonth(m);
-            setYear(y);
-          }}
-        />
-      </View>
+      <PeriodBar
+        padded={false}
+        month={month}
+        year={year}
+        onChange={(m, y) => {
+          setMonth(m);
+          setYear(y);
+        }}
+      />
 
       {areas.length > 1 && (
         <Chips
@@ -463,11 +476,19 @@ export function CreateInvoicesSheet({
                 </Text>
               </Pressable>
 
-              <Pressable onPress={() => setExpandedId(expanded ? '' : item.roomId)} style={{ alignItems: 'flex-end' }}>
+              <Pressable onPress={() => setExpandedId(expanded ? '' : item.roomId)} hitSlop={6} style={{ alignItems: 'flex-end', gap: 3 }}>
                 <Text style={{ fontSize: 15, fontWeight: '900', color: colors.primary }}>{money(rowTotal)}</Text>
-                <Text style={{ fontSize: 11, color: colors.muted, fontWeight: '700' }}>
-                  {expanded ? 'Thu gọn ▲' : 'Sửa phí ▼'}
-                </Text>
+                <View
+                  style={{
+                    backgroundColor: expanded ? colors.primarySoft : '#f1f3f9',
+                    paddingHorizontal: 8,
+                    paddingVertical: 2,
+                    borderRadius: 99,
+                  }}>
+                  <Text style={{ fontSize: 11, color: expanded ? colors.primary : colors.textSoft, fontWeight: '700' }}>
+                    {expanded ? 'Thu gọn ▲' : 'Sửa phí ▼'}
+                  </Text>
+                </View>
               </Pressable>
             </View>
 

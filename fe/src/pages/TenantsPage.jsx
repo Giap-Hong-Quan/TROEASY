@@ -1,10 +1,13 @@
 import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Search, Phone, MapPin, Building2, Loader2, CreditCard } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Modal } from "antd";
+import toast from "react-hot-toast";
+import { Search, Phone, MapPin, Building2, Loader2, CreditCard, Crown, LogOut } from "lucide-react";
 import AreaSearchDropdown from "../components/AreaSearchDropdown.jsx";
+import SelectRepresentativeModal from "../components/SelectRepresentativeModal.jsx";
 import TenantDetailModal from "../components/TenantDetailModal.jsx";
 import { getAreas } from "../services/ereaService.js";
-import { getTenants } from "../services/tenantService.js";
+import { getTenants, updateTenantWithMeta } from "../services/tenantService.js";
 
 const STATUS_MAP = {
   active: {
@@ -42,9 +45,51 @@ export default function TenantsPage({
   onViewTenant,
   onCheckoutTenant,
 }) {
+  const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedArea, setSelectedArea] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
   const [selectedTenant, setSelectedTenant] = useState(null);
+  const [repPicker, setRepPicker] = useState(null);
+
+  const checkoutMutation = useMutation({
+    mutationFn: (tenant) =>
+      updateTenantWithMeta(tenant._id || tenant.id, {
+        status: "checkout",
+        isRepresentative: false,
+      }),
+    onSuccess: (res, tenant) => {
+      queryClient.invalidateQueries({ queryKey: ["tenants"] });
+      queryClient.invalidateQueries({ queryKey: ["rooms"] });
+      toast.success(`Đã chuyển "${tenant.fullName}" sang Đã trả phòng!`);
+      if (res?.needsNewRepresentative && res.remainingActiveTenants?.length > 0) {
+        setRepPicker({
+          candidates: res.remainingActiveTenants,
+          roomCode: tenant.roomId?.code || tenant.roomCode || "",
+        });
+      }
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || "Không thể cập nhật trạng thái trả phòng.");
+    },
+  });
+
+  const handleCheckout = (tenant) => {
+    if (onCheckoutTenant) {
+      onCheckoutTenant(tenant);
+      return;
+    }
+    Modal.confirm({
+      title: "Xác nhận trả phòng",
+      content: `Chuyển "${tenant.fullName}" sang trạng thái Đã trả phòng?${
+        tenant.isRepresentative ? " Sau khi trả phòng bạn sẽ chọn người đại diện mới cho phòng." : ""
+      }`,
+      okText: "Trả phòng",
+      cancelText: "Hủy",
+      okButtonProps: { danger: true },
+      onOk: () => checkoutMutation.mutateAsync(tenant),
+    });
+  };
 
   // 1. Gọi API Lấy danh sách Khách thuê từ Backend
   const {
@@ -62,7 +107,13 @@ export default function TenantsPage({
     queryFn: getAreas,
   });
 
-  // Lọc tìm kiếm & khu vực phía Frontend
+  // Lọc tìm kiếm, khu vực & trạng thái phía Frontend
+  const statusCounts = useMemo(() => {
+    const active = tenantsData.filter((t) => t.status === "active").length;
+    const checkout = tenantsData.filter((t) => t.status === "checkout").length;
+    return { all: tenantsData.length, active, checkout };
+  }, [tenantsData]);
+
   const filteredTenants = useMemo(() => {
     const query = searchTerm.trim().toLocaleLowerCase("vi");
 
@@ -71,6 +122,7 @@ export default function TenantsPage({
         tenant.areaId?._id || tenant.areaId?.id || tenant.areaId;
 
       const matchesArea = !selectedArea || String(tenantAreaId) === String(selectedArea);
+      const matchesStatus = !statusFilter || tenant.status === statusFilter;
 
       const roomCode = tenant.roomId?.code || "";
       const searchableText = `${roomCode} ${tenant.fullName} ${tenant.phone || ""} ${tenant.citizenId || ""}`
@@ -78,9 +130,9 @@ export default function TenantsPage({
 
       const matchesSearch = !query || searchableText.includes(query);
 
-      return matchesArea && matchesSearch;
+      return matchesArea && matchesStatus && matchesSearch;
     });
-  }, [tenantsData, searchTerm, selectedArea]);
+  }, [tenantsData, searchTerm, selectedArea, statusFilter]);
 
   return (
     <div className="w-full space-y-4 px-2 py-3 lg:px-4 lg:py-4">
@@ -119,6 +171,38 @@ export default function TenantsPage({
           selectedAreaId={selectedArea}
           onSelectArea={(areaId) => setSelectedArea(areaId)}
         />
+
+        {/* Lọc theo trạng thái (Tất cả / Đang thuê / Đã trả phòng) */}
+        <div className="flex flex-wrap items-center gap-1 rounded-xl border border-[#e8e7f2] bg-[#f9f9fc] p-1">
+          {[
+            { value: "", label: "Tất cả", count: statusCounts.all },
+            { value: "active", label: "Đang thuê", count: statusCounts.active },
+            { value: "checkout", label: "Đã trả phòng", count: statusCounts.checkout },
+          ].map((opt) => {
+            const active = statusFilter === opt.value;
+            return (
+              <button
+                key={opt.value || "all"}
+                type="button"
+                onClick={() => setStatusFilter(opt.value)}
+                className={`inline-flex h-7 items-center gap-1.5 rounded-lg px-2.5 text-[11.5px] font-semibold transition ${
+                  active
+                    ? "bg-[#6756df] text-white shadow-sm"
+                    : "text-[#5f657d] hover:bg-white hover:text-[#20243c]"
+                }`}
+              >
+                <span>{opt.label}</span>
+                <span
+                  className={`rounded-md px-1.5 py-0.2 text-[10px] font-bold ${
+                    active ? "bg-white/20 text-white" : "bg-[#ecebf5] text-[#6756df]"
+                  }`}
+                >
+                  {opt.count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
 
         {/* Total stats pill */}
         <div className="ml-auto flex items-center gap-1.5 rounded-lg bg-[#f4f3fd] px-2.5 py-1 text-[11px] font-semibold text-[#6756df]">
@@ -221,11 +305,16 @@ export default function TenantsPage({
                             {getAvatarInitial(tenant.fullName)}
                           </div>
                           <div>
-                            <p className="font-bold text-[#20243c] group-hover/name:text-[#6756df] transition-colors">
-                              {tenant.fullName}
-                            </p>
+                            <div className="flex items-center gap-1.5">
+                              <p className="font-bold text-[#20243c] group-hover/name:text-[#6756df] transition-colors">
+                                {tenant.fullName}
+                              </p>
+                              {tenant.isRepresentative && (
+                                <Crown size={12} className="shrink-0 text-[#b9822f]" title="Người đại diện phòng" />
+                              )}
+                            </div>
                             <span className="text-[10px] text-[#9095aa]">
-                              {tenant.isRepresentative ? "Hợp đồng chính" : "Ở cùng"}
+                              {tenant.isRepresentative ? "Đại diện phòng" : "Ở cùng"}
                             </span>
                           </div>
                         </div>
@@ -287,9 +376,10 @@ export default function TenantsPage({
                           {tenant.status === "active" && (
                             <button
                               type="button"
-                              onClick={() => onCheckoutTenant?.(tenant)}
-                              className="inline-flex h-8 items-center justify-center rounded-[8px] border border-[#ffd0d6] bg-[#fff5f6] px-2.5 text-[11.5px] font-semibold text-[#dd5262] transition-colors hover:bg-[#ffebee] hover:border-[#fca5af]"
+                              onClick={() => handleCheckout(tenant)}
+                              className="inline-flex h-8 items-center justify-center gap-1 rounded-[8px] border border-[#ffd0d6] bg-[#fff5f6] px-2.5 text-[11.5px] font-semibold text-[#dd5262] transition-colors hover:bg-[#ffebee] hover:border-[#fca5af]"
                             >
+                              <LogOut size={12} />
                               Trả phòng
                             </button>
                           )}
@@ -327,6 +417,14 @@ export default function TenantsPage({
         isOpen={Boolean(selectedTenant)}
         onClose={() => setSelectedTenant(null)}
         tenant={selectedTenant}
+      />
+
+      {/* Modal chọn người đại diện mới sau khi đại diện cũ trả phòng */}
+      <SelectRepresentativeModal
+        isOpen={Boolean(repPicker)}
+        onClose={() => setRepPicker(null)}
+        candidates={repPicker?.candidates || []}
+        roomCode={repPicker?.roomCode || ""}
       />
     </div>
   );

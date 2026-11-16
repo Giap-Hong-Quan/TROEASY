@@ -4,14 +4,14 @@ import toast from "react-hot-toast";
 import logo from "../assets/logo.png";
 import { getCurrentUser, logout } from "../services/authService.js";
 import {
-  LayoutDashboard, House, UsersRound, FileText, Zap, CreditCard,
+  LayoutGrid, House, UsersRound, FileText, Zap, CreditCard,
   Wrench, ChartNoAxesCombined, ChartColumnIncreasing,
   X, MoreHorizontal, UserRound, LogOut
 } from "lucide-react";
 
 const groups = [
   { title: "TỔNG QUAN", items: [
-    { label: "Tổng quan", icon: LayoutDashboard, path: "/" },
+    { label: "Tổng quan", icon: LayoutGrid, path: "/" },
     { label: "Sơ đồ phòng", icon: House, path: "/rooms" },
     { label: "Khách thuê", icon: UsersRound, path: "/tenants" },
     { label: "Hợp đồng", icon: FileText, path: "/contracts" },

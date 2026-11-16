@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import CreateTenantModal from "./CreateTenantModal.jsx";
 import CustomSelect from "./CustomSelect.jsx";
+import SelectRepresentativeModal from "./SelectRepresentativeModal.jsx";
 import TenantDetailModal from "./TenantDetailModal.jsx";
 import { deleteRoom, getRoomById, updateRoom } from "../services/roomService.js";
 import { getTenants } from "../services/tenantService.js";
@@ -98,6 +99,7 @@ export default function RoomDetailModal({
   const [isAddTenantOpen, setIsAddTenantOpen] = useState(false);
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
   const [selectedTenantDetail, setSelectedTenantDetail] = useState(null);
+  const [isSelectRepOpen, setIsSelectRepOpen] = useState(false);
 
   // State chế độ chỉnh sửa trực tiếp
   const [isEditing, setIsEditing] = useState(false);
@@ -141,7 +143,12 @@ export default function RoomDetailModal({
   const status = STATUS_CONFIG[currentRoom?.status] || STATUS_CONFIG.vacant;
   const rowName = rowLabel || currentRoom?.row || "Chưa phân dãy";
   const assets = Array.isArray(currentRoom?.assets) ? currentRoom.assets : [];
-  const totalDeposit = tenants.reduce((sum, t) => sum + (Number(t.depositAmount) || 0), 0);
+  const activeTenants = useMemo(
+    () => tenants.filter((t) => t.status !== "checkout"),
+    [tenants]
+  );
+  const totalDeposit = activeTenants.reduce((sum, t) => sum + (Number(t.depositAmount) || 0), 0);
+  const hasRepresentative = activeTenants.some((t) => t.isRepresentative === true);
 
   // Lấy danh sách các dãy thuộc khu vực hiện tại
   const currentAreaId = area?.id || area?._id || currentRoom?.areaId;
@@ -235,9 +242,9 @@ export default function RoomDetailModal({
     onClose?.();
   };
 
-  // Đại diện hợp đồng luôn đứng đầu danh sách
-  const sortedTenants = [...tenants].sort(
-    (a, b) => Number(b.isRepresentative) - Number(a.isRepresentative)
+  // Đại diện hợp đồng luôn đứng đầu danh sách (chỉ hiển thị khách đang ở)
+  const sortedTenants = [...activeTenants].sort(
+    (a, b) => Number(b.isRepresentative === true) - Number(a.isRepresentative === true)
   );
 
   return (
@@ -306,7 +313,7 @@ export default function RoomDetailModal({
                   </div>
                   <div className="rounded-xl bg-white/15 px-3.5 py-2 ring-1 ring-white/20 backdrop-blur">
                     <p className="text-[10px] font-semibold uppercase tracking-wide text-white/75">Người ở</p>
-                    <p className="text-sm font-extrabold">{tenants.length} người</p>
+                    <p className="text-sm font-extrabold">{activeTenants.length} người</p>
                   </div>
                 </div>
               </div>
@@ -319,9 +326,9 @@ export default function RoomDetailModal({
                 <div className="mb-3 flex items-center justify-between">
                   <h3 className="flex items-center gap-2 text-sm font-bold text-[#20243c]">
                     <Users size={16} className="text-[#6756df]" />
-                    Người thuê phòng
+                    Khách đang ở
                     <span className="rounded-md bg-[#f1effe] px-1.5 py-0.5 text-[11px] font-bold text-[#6756df]">
-                      {tenants.length}
+                      {activeTenants.length}
                     </span>
                   </h3>
                   <button
@@ -333,6 +340,23 @@ export default function RoomDetailModal({
                     Thêm người
                   </button>
                 </div>
+
+                {!isFetchingTenants && activeTenants.length > 0 && !hasRepresentative && (
+                  <div className="mb-3 flex items-center justify-between gap-2.5 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs text-amber-900">
+                    <div className="flex items-center gap-2">
+                      <TriangleAlert size={15} className="shrink-0 text-amber-600" />
+                      <span className="font-semibold">Phòng chưa có người đại diện</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setIsSelectRepOpen(true)}
+                      className="inline-flex h-7 shrink-0 items-center gap-1 rounded-lg bg-[#6756df] px-2.5 text-[11px] font-semibold text-white transition hover:bg-[#5b4bc7]"
+                    >
+                      <Crown size={12} />
+                      Chọn đại diện
+                    </button>
+                  </div>
+                )}
 
                 {sortedTenants.length > 0 ? (
                   <div className="space-y-2">
@@ -764,6 +788,14 @@ export default function RoomDetailModal({
         onClose={() => setSelectedTenantDetail(null)}
         tenant={selectedTenantDetail}
         zIndex={1300}
+      />
+
+      <SelectRepresentativeModal
+        isOpen={isSelectRepOpen}
+        onClose={() => setIsSelectRepOpen(false)}
+        candidates={sortedTenants}
+        roomCode={code}
+        zIndex={1350}
       />
     </>
   );

@@ -1,6 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Tabs } from 'expo-router';
 import { type ComponentProps } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { colors } from '@/lib/theme';
 
@@ -22,6 +23,7 @@ const tab = (name: string, title: string, icon: IconName, iconActive: IconName):
 });
 
 export default function TabsLayout() {
+  const insets = useSafeAreaInsets();
   const items = [
     tab('index', 'Tổng quan', 'grid-outline', 'grid'),
     tab('rooms', 'Phòng', 'home-outline', 'home'),
@@ -30,14 +32,23 @@ export default function TabsLayout() {
     tab('more', 'Khác', 'ellipsis-horizontal-circle-outline', 'ellipsis-horizontal-circle'),
   ];
 
+  const padBottom = Math.max(insets.bottom, 8);
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: '#a2a6b7',
-        tabBarLabelStyle: { fontSize: 11, fontWeight: '700' },
-        tabBarStyle: { backgroundColor: '#fff', borderTopColor: colors.border },
+        tabBarInactiveTintColor: '#8d92a5',
+        tabBarLabelStyle: { fontSize: 11.5, fontWeight: '700' },
+        tabBarItemStyle: { paddingVertical: 2 },
+        tabBarStyle: {
+          backgroundColor: '#fff',
+          borderTopColor: colors.border,
+          height: 58 + padBottom,
+          paddingTop: 6,
+          paddingBottom: padBottom,
+        },
       }}>
       {items.map((t) => (
         <Tabs.Screen key={t.name} name={t.name} options={t.options} />

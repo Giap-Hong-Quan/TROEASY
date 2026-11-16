@@ -20,6 +20,15 @@ export const updateTenant = async (id, tenantData) => {
     return response?.data?.tenant;
 };
 
+export const updateTenantWithMeta = async (id, tenantData) => {
+    const response = await apiClient.put(`/tenants/${id}`, tenantData);
+    return {
+        tenant: response?.data?.tenant,
+        needsNewRepresentative: Boolean(response?.data?.needsNewRepresentative),
+        remainingActiveTenants: response?.data?.remainingActiveTenants || [],
+    };
+};
+
 export const deleteTenant = async (id) => {
     const response = await apiClient.delete(`/tenants/${id}`);
     return response?.data?.tenant;

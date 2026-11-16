@@ -85,7 +85,7 @@ export const ROOM_STATUS: Record<string, Tone> = {
 };
 
 export const TENANT_STATUS: Record<string, Tone> = {
-  active: { label: 'Đang ở', fg: colors.success, bg: colors.successBg },
+  active: { label: 'Đang thuê', fg: colors.success, bg: colors.successBg },
   checkout: { label: 'Đã trả phòng', fg: colors.gray, bg: colors.grayBg },
 };
 

@@ -215,6 +215,7 @@ export function UtilityInputSheet({
       {!focusRoomId && (
         <>
           <PeriodBar
+            padded={false}
             month={month}
             year={year}
             onChange={(m, y) => {
@@ -353,7 +354,7 @@ function MiniInput({
 }) {
   return (
     <View style={{ flex: 1, gap: 4 }}>
-      <Text style={{ fontSize: 11, fontWeight: '700', color: colors.muted }}>{label}</Text>
+      <Text style={{ fontSize: 11.5, fontWeight: '700', color: colors.textSoft }}>{label}</Text>
       <TextInput
         value={value}
         onChangeText={onChangeText}
@@ -361,7 +362,7 @@ function MiniInput({
         placeholderTextColor="#b0b4c4"
         keyboardType="numeric"
         style={{
-          height: 40,
+          height: 42,
           borderRadius: 10,
           borderWidth: 1,
           borderColor: invalid ? colors.danger : highlight ? '#c5bdf5' : colors.border,

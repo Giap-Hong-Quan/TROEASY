@@ -1,4 +1,4 @@
-import Ionicons from '@expo/vector-icons/Ionicons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 import { Text, View } from 'react-native';
@@ -43,10 +43,10 @@ export default function TenantsScreen() {
     <View style={{ flex: 1 }}>
       <Screen
         title="Khách thuê"
-        subtitle={`${active} đang ở · ${total} hồ sơ`}
+        subtitle={`${active} đang thuê · ${total} hồ sơ`}
         refreshing={tenants.isRefetching}
         onRefresh={() => tenants.refetch()}
-        bottomPad={90}
+        bottomPad={104}
         header={
           <View style={{ gap: 10, paddingBottom: 4 }}>
             <SearchBox value={search} onChangeText={setSearch} placeholder="Tìm tên, SĐT, CCCD, phòng..." />
@@ -72,12 +72,12 @@ export default function TenantsScreen() {
                   <Text style={{ fontSize: 15, fontWeight: '800', color: colors.text, flexShrink: 1 }} numberOfLines={1}>
                     {t.fullName}
                   </Text>
-                  {t.isRepresentative !== false && <Ionicons name="ribbon" size={13} color={colors.primary} />}
+                  {t.isRepresentative === true && <MaterialCommunityIcons name="crown" size={15} color="#b9822f" />}
                 </View>
-                <Text style={{ fontSize: 12, color: colors.muted }}>
+                <Text style={{ fontSize: 12.5, color: colors.muted }}>
                   {t.phone} · {room?.code ? `Phòng ${room.code}` : 'Chưa gán phòng'}
                 </Text>
-                <Text style={{ fontSize: 11.5, color: colors.muted }} numberOfLines={1}>
+                <Text style={{ fontSize: 12, color: colors.muted }} numberOfLines={1}>
                   {area?.name ? `${area.name} · ` : ''}Vào {formatDate(t.startDate)} · Cọc {money(t.depositAmount ?? 0)}
                 </Text>
               </View>
